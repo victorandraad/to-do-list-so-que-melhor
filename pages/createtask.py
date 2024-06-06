@@ -85,7 +85,8 @@ def footer(page):
             alignment=MainAxisAlignment.END,
             vertical_alignment=VerticalAlignment.END,
             controls=[
-                ElevatedButton("Cancelar", on_click= lambda _: page.go("/")),ElevatedButton("Criar", on_click= lambda _: page.go("/"))
+                ElevatedButton("Cancelar", on_click= lambda _: page.go("/")),
+                ElevatedButton("Criar", on_click= lambda _: page.go("/"))
             ]
         )
     )
