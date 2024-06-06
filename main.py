@@ -5,8 +5,9 @@ def main(page: Page):
     page.fonts = {
         "Roboto": "/fonts/Roboto-Regular.ttf",
     }
-    
+
     def mainContainer(e=None):
+        tasks_container = tasksContainer()
         return Container(
         width=414,
         height=455,
@@ -14,10 +15,10 @@ def main(page: Page):
         bgcolor='black' if cor == 'white' else 'white',
         content=Column(
             controls=[
-                menuContainer(),
-                selectContainer(),
+                menuContainer(page),
+                selectContainer(page, tasks_container),
                 inputContainer(), 
-                tasksContainer(),
+                tasks_container,
                 statusContainer()
             ]
         )
@@ -31,7 +32,7 @@ def main(page: Page):
         bgcolor='black' if cor == 'white' else 'white',
         content=Column(
             controls=[
-                menuContainer(),
+                menuContainer(page),
                 deck_name_field(),
                 task_time_field(),
                 break_time_field(),
@@ -49,7 +50,6 @@ def main(page: Page):
                 "/",
                 [
                     mainContainer(),
-                    ElevatedButton("Visit Store", on_click=lambda _: page.go("/createtask"))
                 ]
             )
         )
