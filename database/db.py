@@ -1,14 +1,12 @@
 import os
-from tinydb import TinyDB
-
-
+from tinydb import TinyDB, Query
 
 class Database:
     def __init__(self, name):
         self.db_name = name
-        os.makedirs('database', exist_ok=True)
+        os.makedirs('database/decks', exist_ok=True)
 
-        self.file_path = f'database/{self.db_name}.json'
+        self.file_path = f'database/decks/{self.db_name}.json'
 
         if not os.path.exists(self.file_path):
             with open(self.file_path, 'w') as fp:
@@ -35,11 +33,28 @@ class Database:
         return self.db.update(fields, query)
 
 class Decks:
+    def __init__(self) -> None:
+        self.decks_db = TinyDB('database\configs\decks.json')
+
     def list_decks(self):
-        files = os.listdir('database')
+        files = os.listdir('database/decks')
         decks = [os.path.splitext(f)[0] for f in files if f.endswith('.json')]
             
         return decks
     
     def delete(self, deck):
-        return os.remove(f'database/{deck}.json')
+        Fruit = Query()
+        self.decks_db.remove(Fruit.deck_name == deck)
+        return os.remove(f'database/decks/{deck}.json')
+    
+    def configs(self, name, task_time=25, break_time=5, cicles=3, ring='alert-sound-loop-189741.mp3'):
+        return self.decks_db.insert(
+            {
+                'deck_name' : name,
+                'task_time' : task_time,
+                'break_time' : break_time,
+                'cicles': cicles,
+                'ring': f'assets/rings/{ring}' 
+            }
+        )
+    
