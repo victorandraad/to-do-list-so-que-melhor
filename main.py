@@ -17,9 +17,9 @@ def main(page: Page):
             controls=[
                 menuContainer(page),
                 selectContainer(page, tasks_container),
-                inputContainer(), 
+                inputContainer(tasks_container), 
                 tasks_container,
-                statusContainer()
+                statusContainer(),
             ]
         )
     )
