@@ -4,30 +4,36 @@ from database.db import *
 cor = "white"
     
 def menuContainer(page):
+    def close_window():
+        if os.path.exists('database/deck temporário.json'):
+            Decks().delete("deck temporário")
+        page.window_close()
+        
     return Container(
         content=Row(
             alignment=MainAxisAlignment.END,
             controls=[
                 IconButton(icons.MINIMIZE, width=30, height=30, icon_size=15, icon_color=cor), 
                 IconButton(icons.CLOSE_FULLSCREEN, width=30, height=30, icon_size=15, icon_color=cor),
-                IconButton(icons.CLOSE, width=30, height=30, icon_size=15, icon_color=cor, on_click=lambda _: page.window_close())
+                IconButton(icons.CLOSE, width=30, height=30, icon_size=15, icon_color=cor, on_click=lambda _: close_window())
             ]
         )
     )
 
 def selectContainer(page, tasks_container):
+    global subMenu
     decks = Decks().list_decks()
-    deckname = "Decks"
+    deckname = "deck temporário"
 
     menuItems = []
 
     subMenu = SubmenuButton(
-        content=Text(deckname),
+        content=Text(deckname, color=cor, size=20),
         controls=menuItems
     )
 
     def updateDeck(deck_name):
-        subMenu.content = Text(deck_name)
+        subMenu.content = Text(deck_name, color=cor, size=20)
         updateTasksContainer(tasks_container, deck_name)
         page.update()
 
@@ -52,12 +58,12 @@ def selectContainer(page, tasks_container):
     )
 
     return Container(
-        padding=padding.only(left=20),
+        padding=padding.only(left=20, bottom=10, right=20),
         content=MenuBar(
             expand=True,
             style=MenuStyle(
                 alignment=alignment.center,
-                bgcolor=colors.BLUE,
+                bgcolor="#7094ff",
                 mouse_cursor={
                     MaterialState.HOVERED: MouseCursor.WAIT,
                     MaterialState.DEFAULT: MouseCursor.ZOOM_OUT
@@ -67,14 +73,23 @@ def selectContainer(page, tasks_container):
         )
     )
 
-def inputContainer():
+def inputContainer(task_container):
+    new_task = TextField(label="Escreva sua próxima tarefa", width=272, height=43, color=cor)
+
+    def create_task(n):
+        db = Database(subMenu.content.value)
+        db.insert({
+            'task': n,
+            'id': 0
+        })
+        updateTasksContainer(task_container, subMenu.content.value)
     return Container(
         content=Row(
             alignment=MainAxisAlignment.CENTER,
             controls=[
-                TextField(label="Escreva sua próxima tarefa", width=272, height=43, color=cor),
-                IconButton(icons.EDIT, width=40, height=43, icon_color=cor),
-                IconButton(icons.CHECK, width=40, height=43, icon_color=cor)
+                new_task,
+                IconButton(icons.EDIT, width=40, height=43, icon_color=cor, on_click=lambda _: print('clicou aqui')),
+                IconButton(icons.CHECK, width=40, height=43, icon_color=cor, on_click=lambda _: create_task(new_task.value))
             ]
         )
     )
