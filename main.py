@@ -1,6 +1,8 @@
 from flet import *
 from pages.homepage import *
-from pages.createtask import *
+from pages.createdeck import *
+
+
 def main(page: Page):
     page.fonts = {
         "Roboto": "/fonts/Roboto-Regular.ttf",
