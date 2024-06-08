@@ -7,15 +7,32 @@ cor = "white"
 
 def deck_name_field():
     global deck_name
-    deck_name = TextField(label="Nome do Deck", width=272, height=43, color=cor, border_color='blue')
+    deck_name = TextField(
+        label="Nome do Deck",
+        width=272,
+        height=50,
+        color='white',
+        border_color='blue',
+        input_filter=InputFilter(allow=True, regex_string=r"[A-Za-z0-9 ]"),  # Permite letras, números e espaços
+    )
     return Container(
+        
         content=Row(
             alignment=MainAxisAlignment.CENTER,
-            controls=[
-                deck_name
-            ]
+            controls=[deck_name]
         )
     )
+
+def validate_deck_name():
+    text = deck_name.value.strip()
+    # Verifica se há pelo menos três caracteres não-espaciais
+    if len([char for char in text if char.isalnum()]) >= 3:
+        deck_name.error_text = None  # Remove o texto de erro se a validação for bem-sucedida
+        return True
+    else:
+        deck_name.error_text = "O nome do deck deve conter pelo menos 3 caracteres não-espaciais."
+        deck_name.update()
+        return False
  
 def task_time_field():
     global task_time
@@ -53,13 +70,11 @@ def repeat_time_field():
         content=Row(
             alignment=MainAxisAlignment.CENTER,
             controls=[
-                Text(value="Quantidade de repetições padrão", font_family="Roboto", color =cor),
+                Text(value="Quantidade de repetições padrão", font_family="Roboto", color=cor),
                 cicles
             ]
         )
     )
-
-from flet import FilePicker, FilePickerResultEvent, Text, ElevatedButton, Container, Row, MainAxisAlignment, icons
 
 def ring(page):
     global selected_files
@@ -95,14 +110,15 @@ def ring(page):
 
 
 def create_deck(page):
-    Database(deck_name.value)
-    os.makedirs(r'assets\rings', exist_ok=True)
+    if validate_deck_name():
+        Database(deck_name.value)
+        os.makedirs('assets/rings', exist_ok=True)
 
-    if not os.path.exists(f'assets\rings\{selected_files.value}'):
-        shutil.copy(path, f'assets/rings/{selected_files.value}')
+        if not os.path.exists(f'assets/rings/{selected_files.value}'):
+            shutil.copy(path, f'assets/rings/{selected_files.value}')
 
-    Decks().configs(deck_name.value, task_time.value, break_time.value, cicles.value, selected_files.value)
-    page.go("/")
+        Decks().configs(deck_name.value, task_time.value, break_time.value, cicles.value, selected_files.value)
+        page.go("/")
 
 def footer(page):
     return Container(
