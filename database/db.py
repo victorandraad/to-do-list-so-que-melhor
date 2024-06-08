@@ -30,7 +30,8 @@ class Database:
         return self.db.remove(query)
 
     def update(self, fields, query):
-        return self.db.update(fields, query)
+        Fruit = Query()
+        return self.db.update(fields, Fruit.task == query)
 
 class Decks:
     def __init__(self) -> None:
