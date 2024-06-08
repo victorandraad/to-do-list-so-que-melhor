@@ -1,8 +1,10 @@
 from flet import *
 from database.db import *
 from time import sleep
+import pygame
 
 cor = "white"
+pygame.mixer.init()
     
 def menuContainer(page):
     def close_window():
@@ -92,10 +94,8 @@ def create_task(task_container, n, time=False, break_time=False, cicles=False):
         try:
             deck = Decks().query(subMenu.content.value)[0]
         except:
-            deck = False
-            time = 25
-            break_time = 5
-            cicles = 3
+            Decks().configs(subMenu.content.value)
+            deck = Decks().query(subMenu.content.value)[0]
 
         if deck:
             if not time:
@@ -113,7 +113,8 @@ def create_task(task_container, n, time=False, break_time=False, cicles=False):
             'id': 0,
             'time': time,
             'break_time': break_time,
-            'cicles': cicles
+            'cicles': cicles,
+            'ring' : "assets/rings/alert-sound-loop-189741.mp3"
         })
         updateTasksContainer(task_container, subMenu.content.value)
 
@@ -125,6 +126,7 @@ def updateTasksContainer(tasks_container, deck_name):
         db = Database(deck_name)
         db_tasks = db.search_all()
         for c in db_tasks:
+            pygame.mixer.music.load(Decks().query(deck_name)[0]['ring'])
             icon_btn = IconButton(
                 ids[c['id']],
                 icon_color="#7094ff"
@@ -150,7 +152,7 @@ def updateTasksContainer(tasks_container, deck_name):
     tasks_container.update()
 
 def define_task_status(icon_btn, r_controls, row, db_task):
-    def timer(r_controls):
+    def timer(r_controls, cicle):
         sec = int(r_controls[1].value[3:])
         minutes = int(r_controls[1].value[:2])
         while True:
@@ -159,27 +161,78 @@ def define_task_status(icon_btn, r_controls, row, db_task):
             
             if sec == 0:
                 sec = 59
-                minutes -= 1
+
+                if minutes == 0:
+                    task_manager(r_controls, cicle)
+                    break
+                
+                else:
+                    minutes -= 1
+
             else:
                 sec -=1
             
             r_controls.pop(1)
-            r_controls.insert(1, Text(value=f"{minutes}:{sec:02.0f}"))
+            r_controls.insert(1, Text(value=f"{minutes:02.0f}:{sec:02.0f}"))
             row.update()
             sleep(1)
 
-            if minutes == 0:
-                break
 
+    def task_manager(r_controls, cicle):
+        def stop_ring(e):
+            pygame.mixer.music.stop()
+            pygame.time.Clock().tick(10)
+        
+        pygame.mixer.music.play(-1)
+        r_controls.append(AlertDialog(title=Text("Alarme"), on_dismiss=stop_ring, open=True, content=Text(value="Clique para parar o alarme.")))
+        row.update()
 
+        while pygame.mixer.music.get_busy():
+            pass
+
+        if r_controls[0].icon == icons.FREE_BREAKFAST:
+            r_controls[0].icon = icons.RADIO_BUTTON_CHECKED
+            r_controls.pop(1)
+            r_controls.insert(1, Text(value=f"{int(db_task['time']):02.0f}:00"))
+            timer(r_controls, cicle)
+
+        elif r_controls[0].icon == icons.RADIO_BUTTON_CHECKED:
+            cicle += 1
+
+            if cicle >= int(db_task['cicles']):
+                r_controls[0].icon = icons.CHECK_BOX
+                r_controls.pop(1)
+                db = Database(subMenu.content.value)
+                db.update({
+                    'id': 4
+                }, db_task['task'])
+                r_controls.append(AlertDialog(title=Text("Tarefa concluida"), on_dismiss=stop_ring, open=True, content=Text(value="É hora de fazer outra coisa!")))
+            
+            else:
+                r_controls[0].icon = icons.FREE_BREAKFAST
+                r_controls.pop(1)
+                r_controls.insert(1, Text(value=f"{int(db_task['break_time']):02.0f}:00"))
+                timer(r_controls, cicle)
+
+    cicle = 0
+    
     if icon_btn.icon == icons.CHECK_BOX_OUTLINE_BLANK:
         icon_btn.icon = icons.RADIO_BUTTON_CHECKED
-        r_controls.insert(1, Text(value=f'{db_task["time"]}:00'))
-        timer(r_controls)
+        r_controls.insert(1, Text(value=f'{int(db_task["time"]):02.0f}:00'))
+        timer(r_controls, cicle)
 
     elif icon_btn.icon == icons.PAUSE_ROUNDED:
         icon_btn.icon = icons.RADIO_BUTTON_CHECKED
-        timer(r_controls)
+        timer(r_controls, cicle)
+
+    elif icon_btn.icon == icons.CHECK_BOX:
+        icon_btn.icon = icons.CHECK_BOX_OUTLINE_BLANK
+        db = Database(subMenu.content.value)
+        db.update(
+            {
+                'id': 0
+            }, db_task['task']
+        )
 
     else:
         icon_btn.icon = icons.PAUSE_ROUNDED
