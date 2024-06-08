@@ -47,6 +47,10 @@ class Decks:
         self.decks_db.remove(Fruit.deck_name == deck)
         return os.remove(f'database/decks/{deck}.json')
     
+    def query(self, deck):
+        Fruit = Query()
+        return self.decks_db.search(Fruit.deck_name == deck)
+    
     def configs(self, name, task_time=25, break_time=5, cicles=3, ring='alert-sound-loop-189741.mp3'):
         return self.decks_db.insert(
             {
@@ -57,4 +61,3 @@ class Decks:
                 'ring': f'assets/rings/{ring}' 
             }
         )
-    
