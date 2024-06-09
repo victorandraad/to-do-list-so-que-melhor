@@ -7,18 +7,22 @@ cor = "white"
 pygame.mixer.init()
     
 def menuContainer(page):
-    def close_window():
+    def close_window(e):
         if os.path.exists('database/decks/deck temporário.json'):
             Decks().delete("deck temporário")
         page.window_destroy()
+    
+    def minimize_window(e):
+        page.window_minimized = True
+        page.update()
         
     return Container(
         content=Row(
             alignment=MainAxisAlignment.END,
             controls=[
-                IconButton(icons.MINIMIZE, width=30, height=30, icon_size=15, icon_color=cor), 
-                IconButton(icons.CLOSE_FULLSCREEN, width=30, height=30, icon_size=15, icon_color=cor),
-                IconButton(icons.CLOSE, width=30, height=30, icon_size=15, icon_color=cor, on_click=lambda _: close_window())
+                IconButton(icons.MINIMIZE, width=30, height=30, icon_size=15, icon_color=cor, on_click=minimize_window), 
+                # IconButton(icons.CLOSE_FULLSCREEN, width=30, height=30, icon_size=15, icon_color=cor),
+                IconButton(icons.CLOSE, width=30, height=30, icon_size=15, icon_color=cor, on_click=close_window)
             ]
         )
     )
@@ -218,6 +222,7 @@ def define_task_status(icon_btn, r_controls, row, db_task):
     
     if icon_btn.icon == icons.CHECK_BOX_OUTLINE_BLANK:
         icon_btn.icon = icons.RADIO_BUTTON_CHECKED
+        # r_controls.insert(1, Text(value=f'00:03'))
         r_controls.insert(1, Text(value=f'{int(db_task["time"]):02.0f}:00'))
         timer(r_controls, cicle)
 
