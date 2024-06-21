@@ -44,12 +44,19 @@ def selectContainer(page, tasks_container):
         updateTasksContainer(tasks_container, deck_name)
         page.update()
 
+    def delete_deck(deck):
+        Decks().delete(deck)
+        page.go('/fdfasdf')
+        page.go('/')
+
 
     for deck in decks:
         menuItems.append(
             Container(
+                padding=padding.all(10),
                 content=Row(
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    
                     controls=[
                         MenuItemButton(
                             content=Text(deck),
@@ -91,18 +98,24 @@ def selectContainer(page, tasks_container):
     )
 
 def inputContainer(task_container):
-    new_task = TextField(label="Escreva sua próxima tarefa", width=272, height=43, color=cor)
+    new_task = TextField(
+        label="Escreva sua próxima tarefa",
+        width=272,
+        height=43, 
+        color=cor,
+        on_submit=lambda e: create_task(task_container, new_task.value))
 
     return Container(
+        padding=padding.all(10),  # Add padding around the Row
         content=Row(
             alignment=MainAxisAlignment.CENTER,
             controls=[
                 new_task,
-                IconButton(icons.EDIT, width=40, height=43, icon_color=cor, on_click=lambda _: print('clicou aqui')),
                 IconButton(icons.CHECK, width=40, height=43, icon_color=cor, on_click=lambda _: create_task(task_container, new_task.value))
             ]
         )
     )
+
 
 def create_task(task_container, n, time=False, break_time=False, cicles=False):
         try:
