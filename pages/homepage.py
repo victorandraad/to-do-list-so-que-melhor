@@ -47,12 +47,22 @@ def selectContainer(page, tasks_container):
 
     for deck in decks:
         menuItems.append(
-            MenuItemButton(
-                content=Text(deck),
-                leading=Icon(icons.FOLDER),
-                style=ButtonStyle(bgcolor={MaterialState.HOVERED: colors.GREEN}),
-                on_click=lambda e, deck=deck: updateDeck(deck)
+            Container(
+                content=Row(
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    controls=[
+                        MenuItemButton(
+                            content=Text(deck),
+                            leading=Icon(icons.FOLDER),
+                            style=ButtonStyle(bgcolor={MaterialState.HOVERED: colors.GREEN}),
+                            on_click=lambda e, deck=deck: updateDeck(deck),
+                        ),
+
+                        IconButton(icons.DELETE, width=30, height=30, icon_size=15, icon_color='red', on_click=lambda e, deck=deck: delete_deck(deck)), 
+                    ]
+                )
             )
+            
         )
 
     menuItems.append(
@@ -129,24 +139,38 @@ def updateTasksContainer(tasks_container, deck_name):
     if deck_name:
         db = Database(deck_name)
         db_tasks = db.search_all()
-        for c in db_tasks:
+        for n, c in enumerate(db_tasks):
             pygame.mixer.music.load(Decks().query(deck_name)[0]['ring'])
             icon_btn = IconButton(
                 ids[c['id']],
                 icon_color="#7094ff"
             )
 
+            r2_controls = [
+                        icon_btn,
+                        Text(value=c['task'], font_family="Roboto", color=cor),
+            ]
+
             r_controls = [
-                icon_btn,
-                Text(value=c['task'], font_family="Roboto", color=cor)
+                Row(
+                    controls=r2_controls
+                ),
+        
+                IconButton(icons.DELETE, width=30, height=30, icon_size=15, icon_color='red', on_click=lambda e, task=c['task'], container=tasks_container:on_delete_task(task, container))
             ]
 
             row = Row(
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
                     controls=r_controls
                 )
 
             def on_click_handler(e, icon_btn=icon_btn, r_controls=r_controls, row=row, db_task=c):
-                define_task_status(icon_btn, r_controls, row, db_task)
+                define_task_status(icon_btn, r2_controls, row, db_task)
+
+
+            def on_delete_task(task, taskcontainer):
+                db.delete(task)
+                updateTasksContainer(taskcontainer, deck_name)
                 
             icon_btn.on_click = on_click_handler
 
@@ -262,8 +286,8 @@ def statusContainer():
         padding=padding.only(left=20),
         content=Row(
             controls=[
-                Icon(icons.WATCH_LATER, size=50, color="#7094ff"),
-                Text(value="215 horas estudadas", size=18, font_family="Roboto", color=cor),
+                # Icon(icons.WATCH_LATER, size=50, color="#7094ff"),
+                # Text(value="215 horas estudadas", size=18, font_family="Roboto", color=cor),
             ]
         )
     )

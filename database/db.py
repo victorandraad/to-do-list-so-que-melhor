@@ -12,6 +12,7 @@ class Database:
             with open(self.file_path, 'w') as fp:
                 fp.close()
 
+        self.fruit = Query()
 
         self.db = TinyDB(self.file_path)
 
@@ -24,14 +25,13 @@ class Database:
         return self.db.all()
 
     def search(self, query):
-        return self.db.search(query)
+        return self.db.search(self.fruit.task == query)
 
     def delete(self, query):
-        return self.db.remove(query)
+        return self.db.remove(self.fruit.task == query)
 
     def update(self, fields, query):
-        Fruit = Query()
-        return self.db.update(fields, Fruit.task == query)
+        return self.db.update(fields, self.fruit.task == query)
 
 class Decks:
     def __init__(self) -> None:
