@@ -185,7 +185,9 @@ def updateTasksContainer(tasks_container, deck_name):
 
 
             def on_delete_task(task, taskcontainer):
+                db = Database(deck_name)
                 db.delete(task)
+                db.close()
                 updateTasksContainer(taskcontainer, deck_name)
                 
             icon_btn.on_click = on_click_handler
