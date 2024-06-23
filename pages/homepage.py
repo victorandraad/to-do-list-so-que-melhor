@@ -268,7 +268,7 @@ def define_task_status(icon_btn, r_controls, row, db_task):
                 db = Database(subMenu.content.value)
                 db.update(
                     {
-                        'id': 3
+                        'id': 2
                     }, db_task['task']
                 )
                 r_controls.pop(1)
