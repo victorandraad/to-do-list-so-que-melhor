@@ -32,6 +32,9 @@ class Database:
 
     def update(self, fields, query):
         return self.db.update(fields, self.fruit.task == query)
+    
+    def close(self):
+        return self.db.close()
 
 class Decks:
     def __init__(self) -> None:
@@ -40,7 +43,6 @@ class Decks:
     def list_decks(self):
         files = os.listdir('database/decks')
         decks = [os.path.splitext(f)[0] for f in files if f.endswith('.json')]
-            
         return decks
     
     def delete(self, deck):
