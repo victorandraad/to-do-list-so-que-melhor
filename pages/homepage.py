@@ -104,7 +104,7 @@ def inputContainer(task_container):
         width=272,
         height=43, 
         color=cor,
-        on_submit=lambda e: create_task(task_container, new_task.value))
+        on_submit=lambda e: create_task(task_container, new_task))
 
     return Container(
         padding=padding.all(20),  # Add padding around the Row
@@ -112,7 +112,7 @@ def inputContainer(task_container):
             alignment=MainAxisAlignment.START,
             controls=[
                 new_task,
-                IconButton(icons.CHECK, width=40, height=43, icon_color=cor, on_click=lambda _: create_task(task_container, new_task.value))
+                IconButton(icons.CHECK, width=40, height=43, icon_color=cor, on_click=lambda _: create_task(task_container, new_task))
             ]
         )
     )
@@ -136,17 +136,24 @@ def create_task(task_container, n, time=False, break_time=False, cicles=False):
                 cicles = deck['cicles']
     
         db = Database(subMenu.content.value)
-        db.insert({
-            'task': n,
-            'id': 0,
-            'time': time,
-            'break_time': break_time,
-            'cicles': cicles,
-            'ring' : "assets/rings/alert-sound-loop-189741.mp3"
-        })
-
+        if not db.search(n.value):
+            db.insert({
+                'task': n.value,
+                'id': 0,
+                'time': time,
+                'break_time': break_time,
+                'cicles': cicles,
+                'ring' : "assets/rings/alert-sound-loop-189741.mp3"
+            })
+            updateTasksContainer(task_container, subMenu.content.value)
+            n.error_text = None
+        
+        else:
+            n.error_text = "Essa task já existe!"
+        
+        n.value = ""
+        n.update()
         db.close()
-        updateTasksContainer(task_container, subMenu.content.value)
 
 def updateTasksContainer(tasks_container, deck_name):
     tasks = []
@@ -272,8 +279,8 @@ def define_task_status(icon_btn, r_controls, row, db_task):
     
     if icon_btn.icon == icons.CHECK_BOX_OUTLINE_BLANK:
         icon_btn.icon = icons.RADIO_BUTTON_CHECKED
-        r_controls.insert(1, Text(value=f'00:03'))
-        # r_controls.insert(1, Text(value=f'{int(db_task["time"]):02.0f}:00'))
+        # r_controls.insert(1, Text(value=f'00:03'))
+        r_controls.insert(1, Text(value=f'{int(db_task["time"]):02.0f}:00'))
         timer(r_controls, cicle)
 
     elif icon_btn.icon == icons.PAUSE_ROUNDED:
