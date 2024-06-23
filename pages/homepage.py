@@ -9,15 +9,15 @@ pygame.mixer.init()
 def menuContainer(page):
     def close_window(e):
         if os.path.exists('database/decks/deck temporário.json'):
-            Decks().delete("deck temporário")
-        page.window_destroy()
+            os.remove('database/decks/deck temporário.json')
+        page.window_close()
     
     def minimize_window(e):
         page.window_minimized = True
         page.update()
         
-    return Container(
-        content=Row(
+    return WindowDragArea(
+        Row(
             alignment=MainAxisAlignment.END,
             controls=[
                 IconButton(icons.MINIMIZE, width=30, height=30, icon_size=15, icon_color=cor, on_click=minimize_window), 
@@ -26,6 +26,7 @@ def menuContainer(page):
             ]
         )
     )
+
 
 def selectContainer(page, tasks_container):
     global subMenu
@@ -106,9 +107,9 @@ def inputContainer(task_container):
         on_submit=lambda e: create_task(task_container, new_task.value))
 
     return Container(
-        padding=padding.all(10),  # Add padding around the Row
+        padding=padding.all(20),  # Add padding around the Row
         content=Row(
-            alignment=MainAxisAlignment.CENTER,
+            alignment=MainAxisAlignment.START,
             controls=[
                 new_task,
                 IconButton(icons.CHECK, width=40, height=43, icon_color=cor, on_click=lambda _: create_task(task_container, new_task.value))
@@ -143,6 +144,8 @@ def create_task(task_container, n, time=False, break_time=False, cicles=False):
             'cicles': cicles,
             'ring' : "assets/rings/alert-sound-loop-189741.mp3"
         })
+
+        db.close()
         updateTasksContainer(task_container, subMenu.content.value)
 
 def updateTasksContainer(tasks_container, deck_name):
@@ -189,6 +192,7 @@ def updateTasksContainer(tasks_container, deck_name):
 
             tasks.insert(0, row)
 
+    db.close()
     tasks_container.content.controls = tasks
     tasks_container.update()
 
