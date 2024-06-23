@@ -199,6 +199,7 @@ def updateTasksContainer(tasks_container, deck_name):
     tasks_container.update()
 
 def define_task_status(icon_btn, r_controls, row, db_task):
+    db = Database(subMenu.content.value)
     def timer(r_controls, cicle):
         sec = int(r_controls[1].value[3:])
         minutes = int(r_controls[1].value[:2])
@@ -257,6 +258,12 @@ def define_task_status(icon_btn, r_controls, row, db_task):
             
             else:
                 r_controls[0].icon = icons.FREE_BREAKFAST
+                db = Database(subMenu.content.value)
+                db.update(
+                    {
+                        'id': 3
+                    }, db_task['task']
+                )
                 r_controls.pop(1)
                 r_controls.insert(1, Text(value=f"{int(db_task['break_time']):02.0f}:00"))
                 timer(r_controls, cicle)
@@ -265,17 +272,21 @@ def define_task_status(icon_btn, r_controls, row, db_task):
     
     if icon_btn.icon == icons.CHECK_BOX_OUTLINE_BLANK:
         icon_btn.icon = icons.RADIO_BUTTON_CHECKED
-        # r_controls.insert(1, Text(value=f'00:03'))
-        r_controls.insert(1, Text(value=f'{int(db_task["time"]):02.0f}:00'))
+        r_controls.insert(1, Text(value=f'00:03'))
+        # r_controls.insert(1, Text(value=f'{int(db_task["time"]):02.0f}:00'))
         timer(r_controls, cicle)
 
     elif icon_btn.icon == icons.PAUSE_ROUNDED:
-        icon_btn.icon = icons.RADIO_BUTTON_CHECKED
+        if db.search(db_task['task'])[0]['id'] == 3:
+            icon_btn.icon = icons.FREE_BREAKFAST
+        
+        elif db.search(db_task['task'])[0]['id'] == 1:
+            icon_btn.icon = icons.RADIO_BUTTON_CHECKED
+
         timer(r_controls, cicle)
 
     elif icon_btn.icon == icons.CHECK_BOX:
         icon_btn.icon = icons.CHECK_BOX_OUTLINE_BLANK
-        db = Database(subMenu.content.value)
         db.update(
             {
                 'id': 0
