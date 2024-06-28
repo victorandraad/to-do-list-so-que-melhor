@@ -1,21 +1,68 @@
-# To Do List - A Melhor Extensão Pop-Up para Windows
+# To-Do List - Só Que Melhor
 
-A intenção é criar uma extensão pop-up para Windows, na qual você pode adicionar suas tarefas, que serão organizadas em pastas e com vários status de atividades pré-determinados. A ideia não é ter um banco de dados complexo; é ser algo que, ao ligar o PC, esteja vazio e você vá preenchendo de acordo com o que deseja fazer naquela sessão.
+Este é um projeto de lista de tarefas melhorado, desenvolvido em Python. Siga as instruções abaixo para clonar o repositório, instalar as dependências e compilar o projeto.
 
-## Principais Objetivos
+## Instruções de Instalação
 
-### 1. Ser uma Extensão Flutuante
+### Clonando o Repositório
 
-Isso significa ser um pop-up, algo que não é realmente uma janela. Exatamente como funciona no celular.
+Para clonar este repositório, execute o seguinte comando no seu terminal:
 
-### 2. Adicionar Tarefas com Tempos
+```bash
+git clone https://github.com/andradavic/to-do-list-so-que-melhor.git
+cd to-do-list-so-que-melhor
+```
 
-As tarefas devem contemplar características baseadas no método Pomodoro. Nela, o usuário vai decidir quanto tempo de execução e de descanso, bem como as repetições desses ciclos.
+### Instalando as Dependências
 
-### 3. Pastas Independentes de Conteúdo
+Certifique-se de ter o Python e o `pip` instalados. Em seguida, instale as dependências necessárias executando:
 
-O usuário poderá dividir suas atividades em pastas de conteúdos, e que essa pasta tenha um hyperlink para um link que o usuário vai escolher... (pode parecer complicado de explicar, mas vocês vão entender quando estiver pronto).
+```bash
+pip install -r requirements.txt
+```
 
-### 4. Tempo de Execução Total
+### Compilando com PyInstaller
 
-Visualização de todo o tempo de execução gasto em cada pasta de conteúdo.
+Para compilar o projeto usando o PyInstaller e esconder o console, execute o comando abaixo:
+
+```bash
+pyinstaller --onefile --noconsole --add-data "database;database" --add-data "assets;assets" main.py
+```
+
+O arquivo `.exe` gerado estará na pasta `dist`.
+
+### Estrutura de Pastas
+
+Para que o executável funcione corretamente, é necessário que as pastas `database` e `assets` estejam no mesmo diretório do executável gerado. Siga os passos abaixo:
+
+1. Navegue até a pasta `dist` onde o arquivo `.exe` foi gerado.
+2. Copie o arquivo `.exe` para o diretório onde deseja executá-lo.
+3. Certifique-se de que as pastas `database` e `assets` estejam no mesmo diretório que o arquivo `.exe`.
+
+### Sugestão
+
+Recomendamos que você compile o executável, coloque-o em um diretório desejado e crie um atalho para a área de trabalho para facilitar o acesso.
+
+### Executando pelo Terminal
+
+Se preferir executar o programa pelo terminal, você pode usar o comando abaixo dentro do diretório do projeto:
+
+```bash
+python main.py
+```
+
+## Imagem do Programa
+
+![homepage](homepage.png)
+![deck_menu](deck_menu.png)
+![create_deck_page](create_deck_page.png)
+
+## Próximos Objetivos
+
+* Alguns bugs exsitem e só serão descobertos durante o uso, concertar eles regularmente é prioridade
+* Deixar com pop-up o programa quando o usuário quiser
+* Editar decks e tasks
+
+## Contribuições
+
+Sinta-se à vontade para contribuir com este projeto. Faça um fork do repositório, crie uma branch para a sua funcionalidade ou correção, e envie um pull request.
