@@ -281,10 +281,15 @@ def define_task_status(icon_btn, r_controls, row, db_task):
         icon_btn.icon = icons.RADIO_BUTTON_CHECKED
         # r_controls.insert(1, Text(value=f'00:03'))
         r_controls.insert(1, Text(value=f'{int(db_task["time"]):02.0f}:00'))
+        db.update(
+            {
+                'id': 1
+            }, db_task['task']
+        )
         timer(r_controls, cicle)
 
     elif icon_btn.icon == icons.PAUSE_ROUNDED:
-        if db.search(db_task['task'])[0]['id'] == 3:
+        if db.search(db_task['task'])[0]['id'] == 2:
             icon_btn.icon = icons.FREE_BREAKFAST
         
         elif db.search(db_task['task'])[0]['id'] == 1:
