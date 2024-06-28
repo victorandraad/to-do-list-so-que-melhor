@@ -38,8 +38,9 @@ class Database:
 
 class Decks:
     def __init__(self) -> None:
-        self.decks_db = TinyDB('database\configs\decks.json')
-
+        os.makedirs('database/decks', exist_ok=True)        
+        os.makedirs(r'database\configs', exist_ok=True)
+        self.decks_db = TinyDB(r'database\configs\decks.json')
     def list_decks(self):
         files = os.listdir('database/decks')
         decks = [os.path.splitext(f)[0] for f in files if f.endswith('.json')]
