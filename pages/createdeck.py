@@ -56,7 +56,7 @@ def break_time_field():
         content=Row(
             alignment=MainAxisAlignment.CENTER,
             controls=[
-                Text(value="Tempo padrão de tasks em minutos", font_family="Roboto", color =cor),
+                Text(value="Tempo padrão de descanso em minutos", font_family="Roboto", color =cor),
                 break_time
             ]
         )
