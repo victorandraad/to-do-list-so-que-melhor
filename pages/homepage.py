@@ -47,7 +47,7 @@ def selectContainer(page, tasks_container):
 
     def delete_deck(deck):
         Decks().delete(deck)
-        page.go('/fdfasdf')
+        page.go('/fdfasdf') # muda de página para uma ágina que não existe
         page.go('/')
 
 
@@ -247,6 +247,9 @@ def define_task_status(icon_btn, r_controls, row, db_task):
 
         if r_controls[0].icon == icons.FREE_BREAKFAST:
             r_controls[0].icon = icons.RADIO_BUTTON_CHECKED
+            db = Database(subMenu.content.value)
+            db.update({'id': 1}, db_task['task'])
+
             r_controls.pop(1)
             r_controls.insert(1, Text(value=f"{int(db_task['time']):02.0f}:00"))
             timer(r_controls, cicle)
@@ -258,20 +261,15 @@ def define_task_status(icon_btn, r_controls, row, db_task):
                 r_controls[0].icon = icons.CHECK_BOX
                 r_controls.pop(1)
                 db = Database(subMenu.content.value)
-                db.update({
-                    'id': 4
-                }, db_task['task'])
+                db.update({'id': 4}, db_task['task'])
                 r_controls.append(AlertDialog(title=Text("Tarefa concluida"), on_dismiss=stop_ring, open=True, content=Text(value="É hora de fazer outra coisa!")))
             
             else:
                 r_controls[0].icon = icons.FREE_BREAKFAST
                 db = Database(subMenu.content.value)
-                db.update(
-                    {
-                        'id': 2
-                    }, db_task['task']
-                )
+                db.update({'id': 2}, db_task['task'])
                 r_controls.pop(1)
+                # r_controls.insert(1, Text(value=f'00:03'))
                 r_controls.insert(1, Text(value=f"{int(db_task['break_time']):02.0f}:00"))
                 timer(r_controls, cicle)
 
@@ -281,29 +279,23 @@ def define_task_status(icon_btn, r_controls, row, db_task):
         icon_btn.icon = icons.RADIO_BUTTON_CHECKED
         # r_controls.insert(1, Text(value=f'00:03'))
         r_controls.insert(1, Text(value=f'{int(db_task["time"]):02.0f}:00'))
-        db.update(
-            {
-                'id': 1
-            }, db_task['task']
-        )
+        db.update({'id': 1}, db_task['task'])
         timer(r_controls, cicle)
 
     elif icon_btn.icon == icons.PAUSE_ROUNDED:
         if db.search(db_task['task'])[0]['id'] == 2:
             icon_btn.icon = icons.FREE_BREAKFAST
+            db.update({'id': 2}, db_task['task'])
         
         elif db.search(db_task['task'])[0]['id'] == 1:
             icon_btn.icon = icons.RADIO_BUTTON_CHECKED
+            db.update({'id': 1}, db_task['task'])
 
         timer(r_controls, cicle)
 
     elif icon_btn.icon == icons.CHECK_BOX:
         icon_btn.icon = icons.CHECK_BOX_OUTLINE_BLANK
-        db.update(
-            {
-                'id': 0
-            }, db_task['task']
-        )
+        db.update({'id': 0}, db_task['task'])
 
     else:
         icon_btn.icon = icons.PAUSE_ROUNDED
