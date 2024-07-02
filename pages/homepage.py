@@ -171,7 +171,9 @@ def updateTasksContainer(tasks_container, deck_name):
 
             r2_controls = [
                         icon_btn,
-                        Text(value=c['task'], font_family="Roboto", color=cor),
+                        Row(
+                            controls=[Text(value=c['task'], font_family="Roboto", color=cor, width=200)],
+                        ),
             ]
 
             r_controls = [
