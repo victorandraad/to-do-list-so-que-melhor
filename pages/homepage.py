@@ -137,14 +137,12 @@ def create_task(task_container, n, time=False, break_time=False, cicles=False):
     
         db = Database(subMenu.content.value)
         if not db.search(n.value):
-            db.insert({
-                'task': n.value,
-                'id': 0,
-                'time': time,
-                'break_time': break_time,
-                'cicles': cicles,
-                'ring' : "assets/rings/alert-sound-loop-189741.mp3"
-            })
+            db.insert(
+                task = n.value,
+                time = time,
+                break_time = break_time,
+                cicles = cicles,
+            )
             updateTasksContainer(task_container, subMenu.content.value)
             n.error_text = None
         
@@ -155,7 +153,7 @@ def create_task(task_container, n, time=False, break_time=False, cicles=False):
         n.update()
         db.close()
 
-def updateTasksContainer(tasks_container, deck_name):
+def updateTasksContainer(tasks_container, deck_name = "deck temporário"):
     tasks = []
     ids = [icons.CHECK_BOX_OUTLINE_BLANK, icons.RADIO_BUTTON_CHECKED, icons.FREE_BREAKFAST, icons.PAUSE_ROUNDED, icons.CHECK_BOX]
 
@@ -208,7 +206,6 @@ def updateTasksContainer(tasks_container, deck_name):
     tasks_container.update()
 
 def define_task_status(icon_btn, r_controls, row, db_task):
-    print(r_controls, row)
     db = Database(subMenu.content.value)
     def timer(r_controls, cicle):
         sec = int(r_controls[1].value[3:])
@@ -221,7 +218,7 @@ def define_task_status(icon_btn, r_controls, row, db_task):
                 sec = 59
 
                 if minutes == 0:
-                    task_manager(r_controls, cicle)
+                    task_manager(icon_btn, r_controls, cicle)
                     break
                 
                 else:
@@ -236,7 +233,7 @@ def define_task_status(icon_btn, r_controls, row, db_task):
             sleep(1)
 
 
-    def task_manager(r_controls, cicle):
+    def task_manager(icon_btn, r_controls, cicle):
         def stop_ring(e):
             pygame.mixer.music.stop()
             pygame.time.Clock().tick(10)
@@ -244,12 +241,12 @@ def define_task_status(icon_btn, r_controls, row, db_task):
         pygame.mixer.music.play(-1)
         r_controls.append(AlertDialog(title=Text("Alarme"), on_dismiss=stop_ring, open=True, content=Text(value="Clique para parar o alarme.")))
         row.update()
-
+        
         while pygame.mixer.music.get_busy():
             pass
-
-        if r_controls[0].icon == icons.FREE_BREAKFAST:
-            r_controls[0].icon = icons.RADIO_BUTTON_CHECKED
+        
+        if icon_btn.icon == icons.FREE_BREAKFAST:
+            icon_btn.icon = icons.RADIO_BUTTON_CHECKED
             db = Database(subMenu.content.value)
             db.update({'id': 1}, db_task['task'])
 
@@ -257,31 +254,31 @@ def define_task_status(icon_btn, r_controls, row, db_task):
             r_controls.insert(1, Text(value=f"{int(db_task['time']):02.0f}:00"))
             timer(r_controls, cicle)
 
-        elif r_controls[0].icon == icons.RADIO_BUTTON_CHECKED:
+        elif icon_btn.icon == icons.RADIO_BUTTON_CHECKED:
             cicle += 1
 
             if cicle >= int(db_task['cicles']):
-                r_controls[0].icon = icons.CHECK_BOX
+                icon_btn.icon = icons.CHECK_BOX
                 r_controls.pop(1)
                 db = Database(subMenu.content.value)
                 db.update({'id': 4}, db_task['task'])
                 r_controls.append(AlertDialog(title=Text("Tarefa concluida"), on_dismiss=stop_ring, open=True, content=Text(value="É hora de fazer outra coisa!")))
             
             else:
-                r_controls[0].icon = icons.FREE_BREAKFAST
+                icon_btn.icon = icons.FREE_BREAKFAST
                 db = Database(subMenu.content.value)
                 db.update({'id': 2}, db_task['task'])
                 r_controls.pop(1)
-                # r_controls.insert(1, Text(value=f'00:03'))
-                r_controls.insert(1, Text(value=f"{int(db_task['break_time']):02.0f}:00"))
+                r_controls.insert(1, Text(value=f'00:03')) # dev assistent
+                # r_controls.insert(1, Text(value=f"{int(db_task['break_time']):02.0f}:00"))
                 timer(r_controls, cicle)
 
     cicle = 0
     
     if icon_btn.icon == icons.CHECK_BOX_OUTLINE_BLANK:
         icon_btn.icon = icons.RADIO_BUTTON_CHECKED
-        # r_controls.insert(1, Text(value=f'00:03'))
-        r_controls.insert(1, Text(value=f'{int(db_task["time"]):02.0f}:00'))
+        r_controls.insert(1, Text(value=f'00:03')) # dev assistent
+        # r_controls.insert(1, Text(value=f'{int(db_task["time"]):02.0f}:00'))
         db.update({'id': 1}, db_task['task'])
         timer(r_controls, cicle)
 
