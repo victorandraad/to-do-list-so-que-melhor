@@ -190,7 +190,7 @@ def updateTasksContainer(tasks_container, deck_name):
                 )
 
             def on_click_handler(e, icon_btn=icon_btn, r_controls=r_controls, row=row, db_task=c):
-                define_task_status(icon_btn, r2_controls, row, db_task)
+                define_task_status(icon_btn, r_controls, row, db_task)
 
 
             def on_delete_task(task, taskcontainer):
@@ -208,6 +208,7 @@ def updateTasksContainer(tasks_container, deck_name):
     tasks_container.update()
 
 def define_task_status(icon_btn, r_controls, row, db_task):
+    print(r_controls, row)
     db = Database(subMenu.content.value)
     def timer(r_controls, cicle):
         sec = int(r_controls[1].value[3:])
