@@ -15,7 +15,7 @@ def main(page: Page):
     page.window_left = 400
     page.window_top = 200
     page.window_width = 425
-    page.window_height = 455
+    page.window_height = 450
 
     def mainContainer(e=None):
         tasks_container = tasksContainer()
@@ -28,7 +28,7 @@ def main(page: Page):
                     selectContainer(page, tasks_container),
                     inputContainer(tasks_container), 
                     tasks_container,
-                    statusContainer(),
+                    # statusContainer(),
                 ]
             )
         )

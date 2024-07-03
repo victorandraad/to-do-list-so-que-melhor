@@ -217,8 +217,10 @@ def define_task_status(icon_btn, r_controls, row, db_task):
             case 'break_time':
                 db.update({'time': decks['task_time']}, db_task['task'])
 
-        sec = int(db_task[field][3:])
-        minutes = int(db_task[field][:2])
+        new_db = db.search(db_task['task'])[0]
+
+        sec = int(new_db[field][3:])
+        minutes = int(new_db[field][:2])
 
         while True:
             if icon_btn.icon == icons.PAUSE_ROUNDED:
@@ -237,12 +239,14 @@ def define_task_status(icon_btn, r_controls, row, db_task):
             else:
                 sec -=1
             
-            r_controls.pop(1)
             time = f"{minutes:02.0f}:{sec:02.0f}"
-            db.update({field: time}, db_task['task'])
+            db.update({field: time}, new_db['task'])
+            new_total_time = (Decks().query(subMenu.content.value)[0]['total_time']) + 1
+            Decks().update({'total_time': new_total_time}, subMenu.content.value)
             r_controls.insert(1, Text(value=time))
             row.update()
             sleep(1)
+            r_controls.pop(1)
 
 
     def task_manager(icon_btn, r_controls, cicle):
@@ -261,8 +265,6 @@ def define_task_status(icon_btn, r_controls, row, db_task):
             icon_btn.icon = icons.RADIO_BUTTON_CHECKED
             db = Database(subMenu.content.value)
             db.update({'id': 1}, db_task['task'])
-
-            r_controls.pop(1)
             timer(r_controls, cicle, 'time')
 
         elif icon_btn.icon == icons.RADIO_BUTTON_CHECKED:
@@ -270,7 +272,6 @@ def define_task_status(icon_btn, r_controls, row, db_task):
 
             if cicle >= int(db_task['cicles']):
                 icon_btn.icon = icons.CHECK_BOX
-                r_controls.pop(1)
                 db = Database(subMenu.content.value)
                 db.update({'id': 4}, db_task['task'])
                 r_controls.append(AlertDialog(title=Text("Tarefa concluida"), on_dismiss=stop_ring, open=True, content=Text(value="É hora de fazer outra coisa!")))
@@ -279,7 +280,6 @@ def define_task_status(icon_btn, r_controls, row, db_task):
                 icon_btn.icon = icons.FREE_BREAKFAST
                 db = Database(subMenu.content.value)
                 db.update({'id': 2}, db_task['task'])
-                r_controls.pop(1)
                 timer(r_controls, cicle, 'break_time')
 
     cicle = 0
@@ -326,12 +326,21 @@ def tasksContainer():
 
 
 def statusContainer():
-    return Container(
-        padding=padding.only(left=20),
+    global status_container
+    try:
+        deck_info = Decks().query(subMenu.content.value)[0]
+        spend_time = (deck_info['total_time'] / 60) / 60
+    except:
+        spend_time = 0
+
+    status_container = Container(
+        padding=padding.only(left=20, bottom=20),
         content=Row(
             controls=[
-                # Icon(icons.WATCH_LATER, size=50, color="#7094ff"),
-                # Text(value="215 horas estudadas", size=18, font_family="Roboto", color=cor),
+                Icon(icons.WATCH_LATER, size=50, color="#7094ff"),
+                Text(value=f"{spend_time} horas estudadas", size=18, font_family="Roboto", color=cor),
             ]
         )
     )
+
+    return status_container
