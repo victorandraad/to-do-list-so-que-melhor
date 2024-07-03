@@ -1,4 +1,4 @@
-from Item import Item
+from app.models.Item import Item
 
 class Deck(Item):
     def __init__(self, name, time, break_time, cycles, sound):

@@ -17,31 +17,32 @@ def main(page: Page):
     page.window_width = 425
     page.window_height = 450
 
+    updateTasksContainer()
+
     def mainContainer(e=None):
-        tasks_container = tasksContainer()
         return Container(
             border_radius= 10,
             bgcolor= 'black',
             content = Column(
                 [
                     menuContainer(page),
-                    selectContainer(page, tasks_container),
-                    inputContainer(tasks_container), 
-                    tasks_container,
+                    selectContainer(page),
+                    inputContainer(), 
+                    tasksContainer,
                     # statusContainer(),
                 ]
             )
         )
-    def createTaskContainer(e=None):
-        return [
-                    menuContainer(page),
-                    deck_name_field(),
-                    task_time_field(),
-                    break_time_field(),
-                    repeat_time_field(),
-                    ring(page),
-                    footer(page)
-                ]
+    # def createTaskContainer(e=None):
+    #     return [
+    #                 menuContainer(page),
+    #                 deck_name_field(),
+    #                 task_time_field(),
+    #                 break_time_field(),
+    #                 repeat_time_field(),
+    #                 ring(page),
+    #                 footer(page)
+    #             ]
     
     def route_change(e: RouteChangeEvent):
         page.views.clear()
@@ -54,14 +55,15 @@ def main(page: Page):
                 bgcolor='transparent'
             )
         )
-        if page.route == "/createtask":
-            page.views.append(
-                View(
-                    "/createtask",
-                    createTaskContainer(),
-                    bgcolor='black'
-                )
-            )
+
+        # if page.route == "/createtask":
+        #     page.views.append(
+        #         View(
+        #             "/createtask",
+        #             createTaskContainer(),
+        #             bgcolor='black'
+        #         )
+        #     )
         page.update()
     
     def view_pop(view):

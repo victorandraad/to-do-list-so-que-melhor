@@ -5,7 +5,3 @@ class Item:
         self.break_time: int = break_time
         self.cycles: int = cycles
         self.sound: str = sound
-
-    def die(self):
-        # Implement delete logic
-        pass
