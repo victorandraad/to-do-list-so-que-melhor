@@ -14,11 +14,21 @@ class Database:
 
         self.fruit = Query()
 
-        self.db = TinyDB(self.file_path)
+        self.db = TinyDB(self.file_path, encoding='utf-8')
 
-    def insert(self, fields: dict):
-        if not isinstance(fields, dict):
-            raise TypeError("Fields must be a dictionary.")
+        self.decks = Decks()
+
+    def insert(self, task, time, break_time, cicles):
+        ring = self.decks.query(self.db_name)[0]['ring']
+
+        fields = {
+            'task': task,
+            'id': 0,
+            'time': time,
+            'break_time': break_time,
+            'cicles': cicles,
+            'ring' : ring,
+        }
         return self.db.insert(fields)
 
     def search_all(self):
@@ -40,7 +50,8 @@ class Decks:
     def __init__(self) -> None:
         os.makedirs('database/decks', exist_ok=True)        
         os.makedirs(r'database\configs', exist_ok=True)
-        self.decks_db = TinyDB(r'database\configs\decks.json')
+        self.decks_db = TinyDB(r'database\configs\decks.json', encoding='utf-8')
+
     def list_decks(self):
         files = os.listdir('database/decks')
         decks = [os.path.splitext(f)[0] for f in files if f.endswith('.json')]
@@ -59,8 +70,8 @@ class Decks:
         return self.decks_db.insert(
             {
                 'deck_name' : name,
-                'task_time' : task_time,
-                'break_time' : break_time,
+                'task_time' : f'{int(task_time):02.0f}:00',
+                'break_time' : f'{int(break_time):02.0f}:00',
                 'cicles': cicles,
                 'ring': f'assets/rings/{ring}' 
             }
