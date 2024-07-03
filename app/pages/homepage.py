@@ -1,5 +1,7 @@
 from flet import *
-from database.db import *
+from app.models.Database import Database
+from app.models.Deck import Deck
+from app.models.Task import Item
 from time import sleep
 import pygame
 
@@ -8,8 +10,6 @@ pygame.mixer.init()
     
 def menuContainer(page):
     def close_window(e):
-        if os.path.exists('database/decks/deck temporário.json'):
-            Decks().delete('deck temporário')
         page.window_close()
     
     def minimize_window(e):
@@ -30,7 +30,7 @@ def menuContainer(page):
 
 def selectContainer(page, tasks_container):
     global subMenu
-    decks = Decks().list_decks()
+    # decks = Database().find_decks()
     deckname = "deck temporário"
 
     menuItems = []

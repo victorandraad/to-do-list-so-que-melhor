@@ -1,6 +1,6 @@
 from flet import *
-from pages.homepage import *
-from pages.createdeck import *
+from app.pages.homepage import *
+from app.pages.createdeck import *
 
 def main(page: Page):
     page.fonts = {
