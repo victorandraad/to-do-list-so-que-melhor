@@ -1,6 +1,23 @@
 from flet import *
-from app.pages.homepage import *
 from app.pages.createdeck import *
+from app.models.Database import Database
+from app.components.WindowControls import WindowControls
+from app.components.DecksMenu import DecksMenu
+from app.components.InputTask import InputTask
+from app.components.TaskContainer import TaskContainer
+from app.models.Deck import Deck
+
+db = Database()
+
+db.deck_name = 'deck temporário'
+
+deck = Deck(
+    'deck temporário',
+    100,
+    100,
+    1,
+    'app/assets/rings/alert-sound-loop-189741.mp3'
+)
 
 def main(page: Page):
     page.fonts = {
@@ -17,7 +34,19 @@ def main(page: Page):
     page.window_width = 425
     page.window_height = 450
 
-    updateTasksContainer()
+    task_container = TaskContainer()
+    task_container.db = db
+    task_container.deck = deck
+
+    decks_menu = DecksMenu(page, db)
+    decks_menu.deck = deck
+    decks_menu.task_container = task_container
+
+    input_container = InputTask()
+    input_container.db = db
+    input_container.deck = deck
+    input_container.task_container = task_container
+
 
     def mainContainer(e=None):
         return Container(
@@ -25,10 +54,10 @@ def main(page: Page):
             bgcolor= 'black',
             content = Column(
                 [
-                    menuContainer(page),
-                    selectContainer(page),
-                    inputContainer(), 
-                    tasksContainer,
+                    WindowControls(page),
+                    decks_menu,
+                    input_container, 
+                    task_container,
                     # statusContainer(),
                 ]
             )
@@ -74,6 +103,7 @@ def main(page: Page):
     page.on_route_change = route_change
     page.on_view_pop = view_pop
     page.go(page.route)
+    task_container.update()
 
 
 if __name__ == "__main__":

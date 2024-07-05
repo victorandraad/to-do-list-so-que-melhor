@@ -114,8 +114,8 @@ def create_deck(page):
         Database(deck_name.value)
         os.makedirs('assets/rings', exist_ok=True)
 
-        if not os.path.exists(f'assets/rings/{selected_files.value}'):
-            shutil.copy(path, f'assets/rings/{selected_files.value}')
+        if not os.path.exists(f'app/assets/rings/{selected_files.value}'):
+            shutil.copy(path, f'app/assets/rings/{selected_files.value}')
 
         Decks().configs(deck_name.value, task_time.value, break_time.value, cicles.value, selected_files.value)
         page.go("/")

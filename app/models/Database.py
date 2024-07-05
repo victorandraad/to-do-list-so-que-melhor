@@ -2,14 +2,19 @@ from tinydb import TinyDB, Query
 import os
 
 class Database:
-    def __init__(self, name) -> None:
+    def __init__(self) -> None:
         self.path_decks = r'app\database\config.json'
-        self.name = name
+        self.deck_name: str
+        self.task_name: str
         
         self.query = Query()
 
-    def open_task(self):
-        self.path_tasks = rf'app\database\decks\{self.name}.json'
+    def open_task(self, deck=False):
+        if not deck:
+            self.path_tasks = rf'app\database\decks\{self.deck_name}.json'
+        else:
+            self.path_tasks = rf'app\database\decks\{deck}.json'
+
         self.tasks_db = TinyDB(self.path_tasks, encoding='utf-8', indent=4)
 
     def open_deck(self):
@@ -21,8 +26,8 @@ class Database:
     def close_deck(self):
         self.deck_db.close()
 
-    def open_databases(self):
-        self.open_task()
+    def open_databases(self, deck=False):
+        self.open_task(deck)
         self.open_deck()
 
     def close_databases(self):
@@ -49,7 +54,7 @@ class Database:
         self.close_databases()
 
     def create_deck(self, deck, **kwargs):
-        self.open_databases()
+        self.open_deck()
         for key, value in kwargs.items():
             setattr(deck, key, value)
 
@@ -63,7 +68,7 @@ class Database:
                     'cycles': deck.cycles
                 }
             )
-        self.close_databases()
+        self.close_deck()
 
     def edit_task(self, task, **kwargs):
         self.open_databases()
@@ -96,7 +101,7 @@ class Database:
                 'sound': deck.sound,
                 'cycles': deck.cycles
             },
-            self.query.name == self.name
+            self.query.name == self.deck_name
         )
         self.close_databases()
 
@@ -108,15 +113,10 @@ class Database:
         self.tasks_db.remove(self.query.name == task.name)
         self.close_databases()
 
-    def delete_deck(self, deck, **kwargs):
-
-        self.open_deck()
-        for key, value in kwargs.items():
-            setattr(deck, key, value)
-
-        self.deck_db.remove(self.query.name == deck.name)
-        self.close_deck()
-
+    def delete_deck(self, deck):
+        self.open_databases(deck)
+        self.deck_db.remove(self.query.name == deck)
+        self.close_databases()
         os.remove(self.path_tasks)
 
     # def find_one_task(self):
@@ -127,7 +127,7 @@ class Database:
 
     def find_deck(self) -> list:
         self.open_databases()
-        result = self.deck_db.search(self.query.name == self.name)
+        result = self.deck_db.search(self.query.name == self.deck_name)
         self.close_databases()
 
         if result:
@@ -153,9 +153,9 @@ class Database:
         """
         Returns a list of all decks.
         """
-        self.open_databases()
+        self.open_deck()
         decks = self.deck_db.all()
-        self.close_databases()
+        self.close_deck()
 
         decks_name = []
 
