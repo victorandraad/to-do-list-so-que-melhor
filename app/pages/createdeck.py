@@ -62,9 +62,9 @@ class CreateDeckPage(View):
 
             deck = Deck(
                 self.deck_name_field.text_field.value, 
-                self.task_time_field.task_time.value, 
-                self.break_time_field.break_time.value, 
-                self.cycles_field.cycles.value, 
+                int(self.task_time_field.task_time.value) * 60, 
+                int(self.break_time_field.break_time.value) * 60, 
+                int(self.cycles_field.cycles.value), 
                 self.ring_field.selected_files.value
             )
 

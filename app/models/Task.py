@@ -6,21 +6,23 @@ class Task(Item):
         self.status: int = status
         self.previous_status: int = 0
 
+        self.blank: bool            = True if status == 0 else False
         self.running: bool          = True if status == 1 else False
         self.is_break_time: bool    = True if status == 2 else False
         self.paused: bool           = True if status == 3 else False
         self.finish: bool           = True if status == 4 else False
         
-
     def reset_states(self):
         self.running = False
         self.paused = False
         self.finish = False
         self.is_break_time = False
+        self.blank = False
         self.previous_status = self.status
 
     def set_blank(self):
         self.reset_states()
+        self.blank = True
         self.status = 0
 
     def set_break_time(self):
