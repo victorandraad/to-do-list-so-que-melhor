@@ -1,134 +1,73 @@
 from flet import *
-# from database.db import *
+from app.models.Database import Database
+from app.models.Deck import Deck
+from app.components.createdeckpage.TaskTimeField import TaskTimeField
+from app.components.createdeckpage.CyclesField import CyclesField
+from app.components.createdeckpage.RingField import RingField
+from app.components.createdeckpage.DeckNameField import DeckNameField
+from app.components.createdeckpage.BreakTimeField import BreakTimeField
+from app.components.WindowControls import WindowControls
 import os
 import shutil
 
-cor = "white"
+class CreateDeckPage(View):
+    def __init__(self, db: Deck, page: Page):
+        super().__init__()
 
-def deck_name_field():
-    global deck_name
-    deck_name = TextField(
-        label="Nome do Deck",
-        width=272,
-        height=50,
-        color='white',
-        border_color='blue',
-        input_filter=InputFilter(allow=True, regex_string=r"[A-Za-z0-9 ]"),  # Permite letras, números e espaços
-    )
-    return Container(
-        
-        content=Row(
-            alignment=MainAxisAlignment.CENTER,
-            controls=[deck_name]
-        )
-    )
+        self.route = "/createdeck"
+        self.bgcolor = 'black'
+        self.db = db
+        self.page = page
+        self.window_controls = WindowControls(self.page)
+        self.deck_name_field = DeckNameField()
+        self.task_time_field = TaskTimeField()
+        self.break_time_field = BreakTimeField()
+        self.cycles_field = CyclesField()
+        self.ring_field = RingField()
 
-def validate_deck_name():
-    text = deck_name.value.strip()
-    # Verifica se há pelo menos três caracteres não-espaciais
-    if len([char for char in text if char.isalnum()]) >= 3:
-        deck_name.error_text = None  # Remove o texto de erro se a validação for bem-sucedida
-        return True
-    else:
-        deck_name.error_text = "O nome do deck deve conter pelo menos 3 caracteres não-espaciais."
-        deck_name.update()
-        return False
- 
-def task_time_field():
-    global task_time
-    task_time = CupertinoTextField(width=50, placeholder_text='25', text_align='center', value=25)
-    return Container(
-        padding=10,
-        content=Row(
-            alignment=MainAxisAlignment.CENTER,
-            controls=[
-                Text(value="Tempo padrão de tasks em minutos", font_family="Roboto", color =cor),
-                task_time
-            ]
-        )
-    )
+        self.deck_name_field.text_field.on_submit = self.create_deck
+        self.task_time_field.task_time.on_submit = self.create_deck
+        self.break_time_field.break_time.on_submit = self.create_deck
+        self.cycles_field.cycles.on_submit = self.create_deck
+        self.ring_field.selected_files.on_submit = self.create_deck
 
-def break_time_field():
-    global break_time
-    break_time = CupertinoTextField(width=50, placeholder_text='5', text_align='center', value=5)
-    return Container(
-        padding=10,
-        content=Row(
-            alignment=MainAxisAlignment.CENTER,
-            controls=[
-                Text(value="Tempo padrão de descanso em minutos", font_family="Roboto", color =cor),
-                break_time
-            ]
-        )
-    )
+        self.controls = [
+            self.window_controls,
+            self.deck_name_field,
+            self.task_time_field,
+            self.break_time_field,
+            self.cycles_field,
+            self.footer()
+        ]
 
-def repeat_time_field():
-    global cicles
-    cicles = CupertinoTextField(width=50, placeholder_text='3', text_align='center', value=3)
-    return Container(
-        padding=10,
-        content=Row(
-            alignment=MainAxisAlignment.CENTER,
-            controls=[
-                Text(value="Quantidade de repetições padrão", font_family="Roboto", color=cor),
-                cicles
-            ]
-        )
-    )
-
-def ring(page):
-    global selected_files
-    def pick_files_result(e: FilePickerResultEvent):
-        global path
-        selected_files.value = (
-            ", ".join(map(lambda f: f.name, e.files)) if e.files else "Cancelled!"
-        )
-        selected_files.update()
-        path = (
-            ", ".join(map(lambda f: f.path, e.files)) if e.files else ""
+    def footer(self):
+        return Container(
+            padding=20,
+            content=Row(
+                alignment=MainAxisAlignment.END,
+                vertical_alignment=VerticalAlignment.END,
+                controls=[
+                    ElevatedButton("Cancelar", on_click= lambda _: self.page.go("/")),
+                    ElevatedButton("Criar", on_click=self.create_deck)
+                ]
+            )
         )
 
-    pick_files_dialog = FilePicker(on_result=pick_files_result)
-    selected_files = Text(value='alert-sound-loop-189741.mp3', font_family="Roboto", color='white', overflow='ELLIPSIS')
+    def create_deck(self, e):
+        if self.deck_name_field.validade_deck_name():
+            os.makedirs('app/assets/rings', exist_ok=True)
 
-    page.overlay.append(pick_files_dialog)
+            if not os.path.exists(f'app/assets/rings/{self.ring_field.selected_files.value}'):
+                shutil.copy(self.ring_field.path, f'app/assets/rings/{self.ring_field.selected_files.value}')
 
-    return Container(
-        padding=10,
-        content=Row(
-            alignment=MainAxisAlignment.CENTER,
-            controls=[
-                selected_files,
-                ElevatedButton(
-                    "Selecionar Arquivo",
-                    icon=icons.UPLOAD,
-                    on_click=lambda _: pick_files_dialog.pick_files(allow_multiple=False, file_type=FilePickerFileType.AUDIO),
-                )
-            ]
-        )
-    )
+            deck = Deck(
+                self.deck_name_field.text_field.value, 
+                self.task_time_field.task_time.value, 
+                self.break_time_field.break_time.value, 
+                self.cycles_field.cycles.value, 
+                self.ring_field.selected_files.value
+            )
 
-
-def create_deck(page):
-    if validate_deck_name():
-        Database(deck_name.value)
-        os.makedirs('assets/rings', exist_ok=True)
-
-        if not os.path.exists(f'app/assets/rings/{selected_files.value}'):
-            shutil.copy(path, f'app/assets/rings/{selected_files.value}')
-
-        Decks().configs(deck_name.value, task_time.value, break_time.value, cicles.value, selected_files.value)
-        page.go("/")
-
-def footer(page):
-    return Container(
-        padding=20,
-        content=Row(
-            alignment=MainAxisAlignment.END,
-            vertical_alignment=VerticalAlignment.END,
-            controls=[
-                ElevatedButton("Cancelar", on_click= lambda _: page.go("/")),
-                ElevatedButton("Criar", on_click= lambda _: create_deck(page))
-            ]
-        )
-    )
+            self.db.deck_name = deck.name
+            self.db.create_deck(deck)
+            self.page.go("/")

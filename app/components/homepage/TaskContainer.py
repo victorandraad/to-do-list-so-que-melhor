@@ -19,6 +19,7 @@ class TaskContainer(Container):
         self.deck: Deck
 
     def update(self, e=False):
+        self.tasks.clear()
         tasks = self.get_all_tasks()
         for task in tasks:
             tasked = self.to_task(task)
@@ -73,7 +74,7 @@ class TaskRow(Row):
                 controls=[
                     self.icon_status,
                     Row(
-                        controls=[Text(value=self.task.name, font_family="Roboto", color='white', width=200)],
+                        controls=[Text(value=self.task.name, font_family="Roboto", color='white', width=250)],
                     )
                 ]
             ),

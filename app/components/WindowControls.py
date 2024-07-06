@@ -1,10 +1,13 @@
 from flet import *
+from app.models.Database import Database
+from app.models.Deck import Deck
 
 class WindowControls(WindowDragArea):
     def __init__(self, page) -> None:
         super().__init__()
         self.page = page
         self.cor = 'white'
+        self.db: Database
         self.content = Row(
                 alignment=MainAxisAlignment.END,
                 controls=[
@@ -15,6 +18,9 @@ class WindowControls(WindowDragArea):
             )
     
     def close_window(self, e):
+        self.db.deck_name = 'deck temporário'
+        self.db.delete_deck('deck temporário')
+        self.update()
         self.page.window_close()
     
     def minimize_window(self, e):

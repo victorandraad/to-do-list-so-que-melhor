@@ -56,6 +56,18 @@ class DecksMenu(Container):
         self.update_menu_items()
         self.update()
 
+        if self.sub_menu.content.value == self.db.deck_name:
+            self.db.deck_name = 'deck temporário'
+            self.sub_menu.content.value = 'deck temporário'
+            self.update_menu_items()
+            self.update()
+            self.task_container.tasks.clear()
+            self.task_container.update()
+            self.db.delete_deck(deck)
+
+    def route_to_create_deck(self, e):
+        self.page.go("/createdeck")
+
     def update_menu_items(self):
         self.menu_items.clear()
         decks = self.db.find_decks()
@@ -86,6 +98,7 @@ class DecksMenu(Container):
                 content=Text("Criar novo deck."),
                 leading=Icon(icons.CREATE_NEW_FOLDER),
                 style=ButtonStyle(bgcolor={MaterialState.HOVERED: colors.BLUE}),
-                on_click=lambda _: self.page.go("/createtask")
+                on_click=self.route_to_create_deck
             )
         )
+        
