@@ -23,14 +23,14 @@ def main(page: Page):
     }
     page.route = "/"
     page.title = "TOMODORO"
-    page.window_bgcolor = colors.TRANSPARENT
+    page.window.bgcolor = colors.TRANSPARENT
     page.bgcolor = colors.TRANSPARENT
-    page.window_title_bar_hidden = True
-    page.window_frameless = True
-    page.window_left = 400
-    page.window_top = 200
-    page.window_width = 425
-    page.window_height = 450
+    page.window.title_bar_hidden = True
+    page.window.frameless = True
+    page.window.left = 400
+    page.window.top = 200
+    page.window.width = 425
+    page.window.height = 450
 
     def route_change(e: RouteChangeEvent):
         page.views.clear()
