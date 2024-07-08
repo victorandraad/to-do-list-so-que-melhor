@@ -5,3 +5,5 @@ __pycache__
 dist/main.exe
 teste.py
 teste.yaml
+/app/dist
+/app/build

@@ -1,68 +1,73 @@
+from app.models.Database import Database
+from app.models.Deck import Deck
+from app.pages.createdeck import *
+from app.pages.homepage import *
 from flet import *
-from pages.homepage import *
-from pages.createdeck import *
+
+
+db = Database()
+
+db.deck_name = 'deck temporário'
+
+temporary_deck = Deck(
+    'deck temporário',
+    100,
+    100,
+    1,
+    'app/assets/rings/alert-sound-loop-189741.mp3'
+)
 
 def main(page: Page):
     page.fonts = {
         "Roboto": "/fonts/Roboto-Regular.ttf",
     }
-    
+    page.route = "/"
     page.title = "TOMODORO"
-    page.window_bgcolor = colors.TRANSPARENT
+    page.window.bgcolor = colors.TRANSPARENT
     page.bgcolor = colors.TRANSPARENT
-    page.window_title_bar_hidden = True
-    page.window_frameless = True
-    page.window_left = 400
-    page.window_top = 200
-    page.window_width = 425
-    page.window_height = 455
+    page.window.title_bar_hidden = True
+    page.window.frameless = True
+    page.window.left = 400
+    page.window.top = 200
+    page.window.width = 425
+    page.window.height = 450
 
-    def mainContainer(e=None):
-        tasks_container = tasksContainer()
-        return Container(
-            border_radius= 10,
-            bgcolor= 'black',
-            content = Column(
-                [
-                    menuContainer(page),
-                    selectContainer(page, tasks_container),
-                    inputContainer(tasks_container), 
-                    tasks_container,
-                    statusContainer(),
-                ]
-            )
-        )
-    def createTaskContainer(e=None):
-        return [
-                    menuContainer(page),
-                    deck_name_field(),
-                    task_time_field(),
-                    break_time_field(),
-                    repeat_time_field(),
-                    ring(page),
-                    footer(page)
-                ]
-    
     def route_change(e: RouteChangeEvent):
         page.views.clear()
-        page.views.append(
-            View(
-                "/",
-                [
-                    mainContainer(),
-                ],
-                bgcolor='transparent'
-            )
-        )
-        if page.route == "/createtask":
+        if page.route == "/":
+            homepage = HomePage(db, temporary_deck, page)
+            homepage.db = db
+            homepage.deck = temporary_deck
             page.views.append(
                 View(
-                    "/createtask",
-                    createTaskContainer(),
-                    bgcolor='black'
+                    route= "/",
+                    bgcolor=colors.TRANSPARENT,
+                    controls=[
+                        homepage
+                    ]
+                )   
+            )
+
+            page.update()
+            homepage.decks_menu.updateDeck(db.deck_name)
+            homepage.decks_menu.update_menu_items()
+            homepage.decks_menu.update()
+            homepage.task_container.update()
+
+        if page.route == "/createdeck":
+            create_deck_page = CreateDeckPage(db, page)
+            create_deck_page.db = db
+
+            page.views.append(
+                View(
+                    route= "/createdeck",
+                    bgcolor=colors.TRANSPARENT,
+                    controls=[
+                        create_deck_page
+                    ]
                 )
             )
-        page.update()
+            page.update()
     
     def view_pop(view):
         page.views.pop()
@@ -72,7 +77,6 @@ def main(page: Page):
     page.on_route_change = route_change
     page.on_view_pop = view_pop
     page.go(page.route)
-
 
 if __name__ == "__main__":
     app(target=main)
