@@ -37,17 +37,18 @@ class DecksMenu(Container):
         self.update_menu_items()
         
     def updateDeck(self, new_deck_name: str):
-        self.sub_menu.content.value = new_deck_name  # Atualiza o nome do deck
+        if not self.sub_menu.content.value == new_deck_name:
+            self.sub_menu.content.value = new_deck_name  # Atualiza o nome do deck
 
-        self.db.deck_name = new_deck_name
-        self.deck.name = self.db.deck_name
+            self.db.deck_name = new_deck_name
+            self.deck.name = self.db.deck_name
 
-        self.db.create_deck(self.deck)
+            self.db.create_deck(self.deck)
 
-        self.deck.name, self.deck.time, self.deck.break_time, self.deck.sound, self.deck.cycles = self.db.find_deck()
+            self.deck.name, self.deck.time, self.deck.break_time, self.deck.sound, self.deck.cycles = self.db.find_deck()
 
-        self.sub_menu.update()
-        self.task_container.update()
+            self.sub_menu.update()
+            self.task_container.update()
 
     def delete_deck(self, deck):
         self.db.deck_name = deck
