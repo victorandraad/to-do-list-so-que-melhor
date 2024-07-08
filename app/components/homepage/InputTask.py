@@ -33,22 +33,22 @@ class InputTask(Container):
             self.new_task.error_text = 'Nao pode ser vazio'
         else:
             self.new_task.error_text = ''
-            self.db.create_task(
-                Task(
+            task = Task(
                     name        = self.new_task.value,
                     time        = self.deck.time,
                     status      = 0,
                     break_time  = self.deck.break_time,
                     cycles      = self.deck.cycles,
                     sound       = self.deck.sound
-                )
             )
+            self.db.create_task(task)
 
             self.new_task.value = ''
 
         self.deck.tasks = self.db.find_tasks()
         self.update()
-        self.task_container.tasks.clear()
+        task = self.task_container.to_row(task)
+        self.task_container.queue_tasks.append(task)
         self.task_container.update()
         self.new_task.focus()
         

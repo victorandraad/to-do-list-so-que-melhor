@@ -6,6 +6,8 @@ class Database:
         self.path_decks = r'app\database\config.json'
         self.deck_name: str
         self.task_name: str
+
+        os.makedirs(r'app\database\decks', exist_ok=True)
         
         self.query = Query()
 

@@ -1,9 +1,10 @@
 from flet import *
+from app.components.homepage.TaskContainer import TaskContainer
 from app.models.Database import Database
 from app.models.Deck import Deck
 
 class DecksMenu(Container):
-    def __init__(self, page, db) -> None:
+    def __init__(self, page, db, task_container) -> None:
         super().__init__()
 
         self.deckname: str = 'deck temporário'
@@ -11,9 +12,9 @@ class DecksMenu(Container):
 
         self.db: Database = db
         self.deck: Deck
-        self.task_container: Container
+        self.task_container: TaskContainer = task_container
 
-        self.page = page
+        self.page: Page = page
         self.padding = padding.only(left=20, bottom=10, right=20)
 
         self.sub_menu = SubmenuButton(
@@ -22,8 +23,8 @@ class DecksMenu(Container):
         )
 
         self.content = MenuBar(
-            expand =True,
-            style = MenuStyle(
+            expand=True,
+            style= MenuStyle(
                 alignment = alignment.center,
                 bgcolor = colors.BLUE,
                 mouse_cursor = {
@@ -34,26 +35,55 @@ class DecksMenu(Container):
             controls=[self.sub_menu]
         )
 
+        self.dialog_change_deck = AlertDialog(
+            modal=True, 
+            title=Text("Atenção!", color=colors.BLUE), 
+            open=False,
+            content=Text(value="Ao trocar de deck o status atual da atividade em andamento é resetado."), 
+            actions=[
+                TextButton("Estou de acordo!", on_click=self.accept_change),
+                TextButton("Voltar.", on_click=self.decline_change, ),
+            ]
+        )
+
         self.update_menu_items()
         
-    def updateDeck(self, new_deck_name: str):
+    def updateDeck(self, new_deck_name: str, force=False):
         if not self.sub_menu.content.value == new_deck_name:
-            self.sub_menu.content.value = new_deck_name  # Atualiza o nome do deck
+            self.active_task = self.task_container.get_active_task(None)
+            if not self.active_task or force:
+                self.sub_menu.content.value = new_deck_name  # Atualiza o nome do deck
 
-            self.db.deck_name = new_deck_name
-            self.deck.name = self.db.deck_name
+                self.db.deck_name = new_deck_name
+                self.deck.name = self.db.deck_name
 
-            self.db.create_deck(self.deck)
+                self.db.create_deck(self.deck)
 
-            self.deck.name, self.deck.time, self.deck.break_time, self.deck.sound, self.deck.cycles = self.db.find_deck()
+                self.deck.name, self.deck.time, self.deck.break_time, self.deck.sound, self.deck.cycles = self.db.find_deck()
 
-            self.sub_menu.update()
-            self.task_container.update()
+                self.sub_menu.update()
+                self.task_container.update(force)
+
+            else:
+                self.task_container.dialog_change_deck.open = True
+                self.db.deck_name = new_deck_name
+                self.task_container.content.content.controls[1].update()
+
+
+    def accept_change(self, e):
+        self.task_container.dialog_change_deck.open = False
+        self.task_container.content.content.controls[1].update()
+        self.updateDeck(self.db.deck_name, True)
+
+    
+    def decline_change(self, e):
+        self.db.deck_name = self.sub_menu.content.value
+        self.task_container.dialog_change_deck.open = False
+        self.task_container.content.content.controls[1].update()
 
     def delete_deck(self, deck):
         self.db.deck_name = deck
         self.db.delete_deck(deck)
-
         self.update_menu_items()
         self.update()
 
@@ -62,14 +92,15 @@ class DecksMenu(Container):
             self.sub_menu.content.value = 'deck temporário'
             self.update_menu_items()
             self.update()
-            self.task_container.tasks.clear()
             self.task_container.update()
             self.db.delete_deck(deck)
+
 
     def route_to_create_deck(self, e):
         self.page.go("/createdeck")
 
     def update_menu_items(self):
+        self.task_container.dialog_change_deck = self.dialog_change_deck
         self.menu_items.clear()
         decks = self.db.find_decks()
         for deck in decks:
@@ -102,4 +133,3 @@ class DecksMenu(Container):
                 on_click=self.route_to_create_deck
             )
         )
-        

@@ -8,30 +8,52 @@ class TaskContainer(Container):
     def __init__(self):
         super().__init__()
         self.tasks: list = []
+        self.queue_tasks: list = []
         self.width= 355
         self.height=234
         self.padding=padding.only(left=20)
+        self.dialog_change_deck: AlertDialog = None
 
-        self.content=Column(
-            scroll=ScrollMode.ADAPTIVE,
-            controls=self.tasks
+        self.content=Container(
+            content=
+                Column(
+                    scroll=ScrollMode.ADAPTIVE,
+                    controls=[
+                        Column(
+                            scroll=ScrollMode.ADAPTIVE,
+                            controls=self.tasks
+                        ),
+                        Column(
+                            scroll=ScrollMode.ADAPTIVE,
+                            controls=self.queue_tasks
+                        ),
+                    ]
+                )
         )
 
         self.db:Database
         self.deck: Deck
-        self.is_a_task_running: bool = False
 
-    def update(self, e=False):
-        self.tasks.clear()
-        tasks = self.get_all_tasks()
-        for task in tasks:
-            tasked = self.to_task(task)
-            tasked_row = self.to_row(tasked)
-            self.tasks.insert(0, tasked_row)
+    def update(self, force=False):
+        if not self.get_active_task(None) or force:
+            self.queue_tasks.clear()
+            self.tasks.clear()
+
+            if self.dialog_change_deck != None:
+                self.queue_tasks.append(self.dialog_change_deck) 
+            
+            tasks = self.get_all_tasks()
+            for task in tasks:
+                tasked = self.to_task(task)
+                tasked_row = self.to_row(tasked)
+                self.tasks.append(tasked_row)
+            
+            self.content.update()
+            return super().update()
         
-        self.content.update()
-        return super().update()
-    
+        self.content.content.controls[1].update()
+
+        
     def get_all_tasks(self):
         self.db.deck_name = self.deck.name
         return self.db.find_tasks()
@@ -52,14 +74,14 @@ class TaskContainer(Container):
     def get_active_task(self, task_name) -> bool:
         """
         False = no active tasks
-        True = active tasks
+        else: return task
         """
         for task in self.tasks:
             if task.controls[0].controls[0].icon != icons.CHECK_BOX_OUTLINE_BLANK:
                 if task_name != task.controls[0].controls[1].controls[0].value:
                     return task.controls[0].controls[1].controls[0].value
-            else:
-                return False
+        
+        return False
 
 class TaskRow(Row):
     def __init__(self, db: Database, task: Task, deck: Deck, get_active_task) -> None:
@@ -77,6 +99,14 @@ class TaskRow(Row):
             icons.PAUSE_ROUNDED, # pause  - 3 
             icons.CHECK_BOX # finished  - 4 
         ]
+
+        self.dialog_start_another_task_error = AlertDialog(
+            modal=True, 
+            title=Text("Atenção!", color=colors.BLUE), 
+            open=False,
+            content=Text(value="Você deve terminar uma tarefa antes de começar outra."), 
+            actions=[TextButton("Voltar.", on_click=self.decline_change, ),]
+        )
 
         self.icon_status = IconButton(
             icon=self.status[self.task.status],
@@ -97,11 +127,16 @@ class TaskRow(Row):
                 ]
             ),
             Text(value="00:00", color='black'),
+            self.dialog_start_another_task_error,
             IconButton(icons.DELETE, width=30, height=30, icon_size=15, icon_color='red', on_click=self.delete_task),
             # Future finish task implementation
             # IconButton(icons.VERIFIED, width=30, height=30, icon_size=15, icon_color='GREEN')
         ]
     
+    def decline_change(self, e):
+        self.dialog_start_another_task_error.open = False
+        self.update()
+
     def delete_task(self, e):
         self.db.delete_task(self.task)
         self.visible = False
@@ -114,10 +149,7 @@ class TaskRow(Row):
         self.icon_status.update()
         self.set_timer()
         self.update()
-        self.timer()
-
-        
-
+        self.timer()   
 
     def change_status_click(self, e):
         active_task = self.get_active_task(self.task.name)
@@ -126,15 +158,7 @@ class TaskRow(Row):
             self.change_status()
         
         else:
-            original_value = self.controls[0].controls[1].controls[0].value
-            self.controls[0].controls[1].controls[0].value = f"Você não pode iniciar uma tarefa enquanto {active_task} está em andamento!"
-            self.controls[0].controls[1].controls[0].color = 'red'
-            self.update()
-
-            sleep(1.5)
-
-            self.controls[0].controls[1].controls[0].value = original_value
-            self.controls[0].controls[1].controls[0].color = 'white'
+            self.dialog_start_another_task_error.open = True
             self.update()
 
         

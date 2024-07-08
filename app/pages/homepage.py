@@ -17,8 +17,7 @@ class HomePage(View):
         self.page = page
         self.window_controls = WindowControls(self.page)
         self.task_container = TaskContainer()
-        self.decks_menu = DecksMenu(self.page, self.db)
-        self.decks_menu.task_container = self.task_container
+        self.decks_menu = DecksMenu(self.page, self.db, self.task_container)
 
         self.input_container = InputTask()
         self.input_container.task_container = self.task_container

@@ -31,7 +31,7 @@ def main(page: Page):
     page.window_top = 200
     page.window_width = 425
     page.window_height = 450
-    
+        
     def route_change(e: RouteChangeEvent):
         page.views.clear()
         if page.route == "/":
