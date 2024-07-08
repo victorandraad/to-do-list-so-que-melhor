@@ -31,15 +31,23 @@ def main(page: Page):
     page.window_top = 200
     page.window_width = 425
     page.window_height = 450
-        
+
     def route_change(e: RouteChangeEvent):
         page.views.clear()
         if page.route == "/":
             homepage = HomePage(db, temporary_deck, page)
             homepage.db = db
             homepage.deck = temporary_deck
+            page.views.append(
+                View(
+                    route= "/",
+                    bgcolor=colors.TRANSPARENT,
+                    controls=[
+                        homepage
+                    ]
+                )   
+            )
 
-            page.views.append(homepage)
             page.update()
             homepage.decks_menu.updateDeck(db.deck_name)
             homepage.decks_menu.update_menu_items()
@@ -50,7 +58,15 @@ def main(page: Page):
             create_deck_page = CreateDeckPage(db, page)
             create_deck_page.db = db
 
-            page.views.append(create_deck_page)
+            page.views.append(
+                View(
+                    route= "/createdeck",
+                    bgcolor=colors.TRANSPARENT,
+                    controls=[
+                        create_deck_page
+                    ]
+                )
+            )
             page.update()
     
     def view_pop(view):

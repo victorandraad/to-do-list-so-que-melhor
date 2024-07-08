@@ -9,10 +9,11 @@ class TaskContainer(Container):
         super().__init__()
         self.tasks: list = []
         self.queue_tasks: list = []
-        self.width= 355
+        self.width= 400
         self.height=234
         self.padding=padding.only(left=20)
         self.dialog_change_deck: AlertDialog = None
+        self.dialog_create_deck: AlertDialog = None
 
         self.content=Container(
             content=
@@ -40,7 +41,8 @@ class TaskContainer(Container):
             self.tasks.clear()
 
             if self.dialog_change_deck != None:
-                self.queue_tasks.append(self.dialog_change_deck) 
+                self.queue_tasks.append(self.dialog_change_deck)
+                self.queue_tasks.append(self.dialog_create_deck)
             
             tasks = self.get_all_tasks()
             for task in tasks:
@@ -77,7 +79,7 @@ class TaskContainer(Container):
         else: return task
         """
         for task in self.tasks:
-            if task.controls[0].controls[0].icon != icons.CHECK_BOX_OUTLINE_BLANK:
+            if task.controls[0].controls[0].icon not in (icons.CHECK_BOX_OUTLINE_BLANK, icons.CHECK_BOX):
                 if task_name != task.controls[0].controls[1].controls[0].value:
                     return task.controls[0].controls[1].controls[0].value
         
@@ -92,6 +94,11 @@ class TaskRow(Row):
         self.deck: Deck = deck
         self.get_active_task = get_active_task
 
+        self.alarm = Audio(
+            src=self.task.sound,
+            volume=1,
+        )
+
         self.status = [
             icons.CHECK_BOX_OUTLINE_BLANK, # nao feito  - 0 
             icons.RADIO_BUTTON_CHECKED, # fazendo  - 1 
@@ -101,10 +108,38 @@ class TaskRow(Row):
         ]
 
         self.dialog_start_another_task_error = AlertDialog(
-            modal=True, 
+            bgcolor='black',
+            modal=True,
             title=Text("Atenção!", color=colors.BLUE), 
             open=False,
             content=Text(value="Você deve terminar uma tarefa antes de começar outra."), 
+            actions=[TextButton("Voltar.", on_click=self.decline_change, ),]
+        )
+
+        self.running_task_alarm = AlertDialog(
+            bgcolor='black',
+            modal=True, 
+            title=Text("Vamos voltar com toda concentração!", color=colors.BLUE),
+            content=Text(value="Valorize o tempo de descanso para voltar muito mais firme 😎"), 
+            open=False,
+            actions=[TextButton("Vamos!", on_click=self.decline_change, ),]
+        )
+
+        self.break_time_task_alarm = AlertDialog(
+            bgcolor='black',
+            modal=True, 
+            title=Text("Hora de descansar.", color=colors.BLUE), 
+            open=False,
+            content=Text(value="Nesse tempo não ouse pensar sobre isso!"), 
+            actions=[TextButton("Ir ao descanso.", on_click=self.decline_change, ),]
+        )
+
+        self.finish_task_alarm = AlertDialog(
+            bgcolor='black',
+            modal=True, 
+            title=Text("Parabéns!", color=colors.GREEN), 
+            open=False,
+            content=Text(value="Por agora já deu disso, mas caso ainda não tenha terminado você pode começar outro ciclo.🫡 \nO tempo recomendado para voltar a fazer a mesma atividade é depois de pelo menos 1 hora."), 
             actions=[TextButton("Voltar.", on_click=self.decline_change, ),]
         )
 
@@ -127,14 +162,24 @@ class TaskRow(Row):
                 ]
             ),
             Text(value="00:00", color='black'),
-            self.dialog_start_another_task_error,
             IconButton(icons.DELETE, width=30, height=30, icon_size=15, icon_color='red', on_click=self.delete_task),
             # Future finish task implementation
             # IconButton(icons.VERIFIED, width=30, height=30, icon_size=15, icon_color='GREEN')
+            self.dialog_start_another_task_error,
+            self.finish_task_alarm,
+            self.break_time_task_alarm,
+            self.running_task_alarm,
+            self.alarm,
         ]
     
     def decline_change(self, e):
         self.dialog_start_another_task_error.open = False
+        self.dialog_start_another_task_error.open = False
+        self.finish_task_alarm.open = False
+        self.break_time_task_alarm.open = False
+        self.running_task_alarm.open = False
+        self.alarm.pause()
+        self.change_status()
         self.update()
 
     def delete_task(self, e):
@@ -185,6 +230,18 @@ class TaskRow(Row):
     def break_time_decrease(self):
         self.task.break_time -= 1
     
+    def running_alarm(self):
+        self.running_task_alarm.open = True
+        self.alarm.play()
+    
+    def break_time_alarm(self):
+        self.break_time_task_alarm.open = True
+        self.alarm.play()
+    
+    def finish_alarm(self):
+        self.finish_task_alarm.open = True
+        self.alarm.play()
+
     def timer(self):
         if self.task.running:
             for c in range(self.task.time):
@@ -203,13 +260,16 @@ class TaskRow(Row):
                     self.task.time = self.deck.time
                     self.task.cycles = self.deck.cycles
                     self.task.set_finish()
+                    self.db.edit_task(self.task, status=4)
+                    self.finish_alarm()
 
                 else:
                     self.task.time = self.deck.time
                     self.task.set_break_time()
+                    self.break_time_alarm()
 
             self.task.break_time = self.deck.break_time
-            self.change_status()
+            self.update()
                 
         elif self.task.is_break_time:
             for c in range(self.task.break_time):
@@ -223,4 +283,4 @@ class TaskRow(Row):
                     break
             
             self.task.set_running()
-            self.change_status()
+            self.running_alarm()

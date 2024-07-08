@@ -36,6 +36,7 @@ class DecksMenu(Container):
         )
 
         self.dialog_change_deck = AlertDialog(
+            bgcolor='black',
             modal=True, 
             title=Text("Atenção!", color=colors.BLUE), 
             open=False,
@@ -43,6 +44,18 @@ class DecksMenu(Container):
             actions=[
                 TextButton("Estou de acordo!", on_click=self.accept_change),
                 TextButton("Voltar.", on_click=self.decline_change, ),
+            ]
+        )
+
+        self.dialog_create_deck = AlertDialog(
+            bgcolor='black',
+            modal=True, 
+            title=Text("Atenção!", color=colors.BLUE), 
+            open=False,
+            content=Text(value="O status atual da atividade em andamento é resetado ao trocar para a página de criação de decks."), 
+            actions=[
+                TextButton("Estou de acordo!", on_click=lambda _: self.page.go('/createdeck')),
+                TextButton("Voltar.", on_click=self.decline_change_to_deckpage),
             ]
         )
 
@@ -81,6 +94,10 @@ class DecksMenu(Container):
         self.task_container.dialog_change_deck.open = False
         self.task_container.content.content.controls[1].update()
 
+    def decline_change_to_deckpage(self, e):
+        self.task_container.dialog_create_deck.open = False
+        self.task_container.content.content.controls[1].update()
+
     def delete_deck(self, deck):
         self.db.deck_name = deck
         self.db.delete_deck(deck)
@@ -97,10 +114,17 @@ class DecksMenu(Container):
 
 
     def route_to_create_deck(self, e):
-        self.page.go("/createdeck")
+        self.active_task = self.task_container.get_active_task(None)
+        if not self.active_task:
+            self.page.go("/createdeck")
+        
+        else:
+            self.task_container.dialog_create_deck.open = True
+            self.task_container.content.content.controls[1].update()
 
     def update_menu_items(self):
         self.task_container.dialog_change_deck = self.dialog_change_deck
+        self.task_container.dialog_create_deck = self.dialog_create_deck
         self.menu_items.clear()
         decks = self.db.find_decks()
         for deck in decks:

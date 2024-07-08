@@ -10,12 +10,15 @@ from app.components.WindowControls import WindowControls
 import os
 import shutil
 
-class CreateDeckPage(View):
+class CreateDeckPage(Container):
     def __init__(self, db: Deck, page: Page):
         super().__init__()
-
-        self.route = "/createdeck"
+        self.border_radius = 10
         self.bgcolor = 'black'
+
+        self.width = 425
+        self.height = 440
+
         self.db = db
         self.page = page
         self.window_controls = WindowControls(self.page)
@@ -25,20 +28,26 @@ class CreateDeckPage(View):
         self.cycles_field = CyclesField()
         self.ring_field = RingField()
 
+        self.vertical_alignment = MainAxisAlignment.SPACE_BETWEEN
+
         self.deck_name_field.text_field.on_submit = self.create_deck
         self.task_time_field.task_time.on_submit = self.create_deck
         self.break_time_field.break_time.on_submit = self.create_deck
         self.cycles_field.cycles.on_submit = self.create_deck
         self.ring_field.selected_files.on_submit = self.create_deck
 
-        self.controls = [
-            self.window_controls,
-            self.deck_name_field,
-            self.task_time_field,
-            self.break_time_field,
-            self.cycles_field,
-            self.footer()
-        ]
+        self.content = Column(
+            alignment=MainAxisAlignment.SPACE_BETWEEN,
+            controls=[
+                self.window_controls,
+                self.deck_name_field,
+                self.task_time_field,
+                self.break_time_field,
+                self.cycles_field,
+                self.ring_field,
+                self.footer(),
+            ]
+        )
 
     def footer(self):
         return Container(
@@ -57,15 +66,17 @@ class CreateDeckPage(View):
         if self.deck_name_field.validade_deck_name():
             os.makedirs('app/assets/rings', exist_ok=True)
 
-            if not os.path.exists(f'app/assets/rings/{self.ring_field.selected_files.value}'):
-                shutil.copy(self.ring_field.path, f'app/assets/rings/{self.ring_field.selected_files.value}')
+            ring_path = f'app/assets/rings/{self.ring_field.selected_files.value}'
+
+            if not os.path.exists(ring_path):
+                shutil.copy(self.ring_field.path, ring_path)
 
             deck = Deck(
                 self.deck_name_field.text_field.value, 
                 int(self.task_time_field.task_time.value) * 60, 
                 int(self.break_time_field.break_time.value) * 60, 
                 int(self.cycles_field.cycles.value), 
-                self.ring_field.selected_files.value
+                ring_path
             )
 
             self.db.deck_name = deck.name

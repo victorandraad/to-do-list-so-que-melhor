@@ -6,12 +6,16 @@ from app.components.homepage.InputTask import InputTask
 from app.components.homepage.TaskContainer import TaskContainer
 from app.components.WindowControls import WindowControls
 
-class HomePage(View):
+class HomePage(Container):
     def __init__(self, db: Deck, deck: Database, page: Page):
         super().__init__()
 
-        self.route = "/"
+        self.border_radius = 10
         self.bgcolor = 'black'
+        
+        self.width = 425
+        self.height = 440
+
         self.deck = deck
         self.db = db
         self.page = page
@@ -30,9 +34,11 @@ class HomePage(View):
         self.input_container.db = self.db
         self.input_container.deck = self.deck
 
-        self.controls = [
-            self.window_controls,
-            self.decks_menu,
-            self.input_container,
-            self.task_container,
-        ]
+        self.content = Column(
+            controls=[
+                self.window_controls,
+                self.decks_menu,
+                self.input_container,
+                self.task_container,
+            ]
+        )
