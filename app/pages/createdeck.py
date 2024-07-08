@@ -22,6 +22,7 @@ class CreateDeckPage(Container):
         self.db = db
         self.page = page
         self.window_controls = WindowControls(self.page)
+        self.window_controls.db = self.db
         self.deck_name_field = DeckNameField()
         self.task_time_field = TaskTimeField()
         self.break_time_field = BreakTimeField()
