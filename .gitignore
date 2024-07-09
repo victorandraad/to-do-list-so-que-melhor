@@ -7,3 +7,5 @@ teste.py
 teste.yaml
 /app/dist
 /app/build
+/app/main
+/dist

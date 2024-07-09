@@ -11,9 +11,9 @@ db.deck_name = 'deck temporário'
 
 temporary_deck = Deck(
     'deck temporário',
-    100,
-    100,
-    1,
+    1500,
+    300,
+    3,
     'app/assets/rings/alert-sound-loop-189741.mp3'
 )
 
