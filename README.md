@@ -26,7 +26,7 @@ pip install -r requirements.txt
 Para compilar o projeto usando o PyInstaller e esconder o console, execute o comando abaixo:
 
 ```bash
-pyinstaller --onefile --noconsole --add-data "database;database" --add-data "assets;assets" main.py
+pyinstaller --distpath dist --onefile --windowed .\main.py
 ```
 
 O arquivo `.exe` gerado estará na pasta `dist`.
