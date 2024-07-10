@@ -9,7 +9,7 @@ class BreakTimeField(Container):
         self.content = Row(
             alignment=MainAxisAlignment.CENTER,
             controls=[
-                Text(value="Tempo padrão de tasks em minutos", font_family="Roboto", color='white'),
+                Text(value="Tempo padrão de descanso em minutos", font_family="Roboto", color='white'),
                 self.break_time
             ]
         )

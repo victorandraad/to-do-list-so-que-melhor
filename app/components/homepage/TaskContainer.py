@@ -32,7 +32,7 @@ class TaskContainer(Container):
                 )
         )
 
-        self.db:Database
+        self.db: Database
         self.deck: Deck
 
     def update(self, force=False):
@@ -149,6 +149,35 @@ class TaskRow(Row):
             on_click=self.change_status_click
         )
 
+        self.task_options = BottomSheet(
+            bgcolor=colors.BLUE,
+            content=Row(
+                controls=[
+                    # TextButton(
+                    #     text="Editar",
+                    #     icon=icons.EDIT,
+                    #     style=ButtonStyle(color=colors.WHITE),
+                    # ),
+                    TextButton(
+                        text="Finalizar",
+                        icon=icons.VERIFIED,
+                        icon_color=colors.GREEN,
+                        on_click=lambda _: (self.task.set_finish(), self.db.edit_task(self.task, status=4), self.change_status(), self.hide_task_options()),
+                        style=ButtonStyle(color=colors.WHITE),
+                    ),
+                    TextButton(
+                        text="Excluir",
+                        icon=icons.DELETE,
+                        icon_color=colors.RED,
+                        on_click=self.delete_task,
+                        style=ButtonStyle(color=colors.WHITE),
+                    )
+                ],
+                tight=True,
+            ),
+        
+        )
+
         self.alignment=MainAxisAlignment.SPACE_BETWEEN,
         self.controls=[
             Row(
@@ -162,9 +191,9 @@ class TaskRow(Row):
                 ]
             ),
             Text(value="00:00", color='black'),
-            IconButton(icons.DELETE, width=30, height=30, icon_size=15, icon_color='red', on_click=self.delete_task),
-            # Future finish task implementation
-            # IconButton(icons.VERIFIED, width=30, height=30, icon_size=15, icon_color='GREEN')
+            IconButton(icons.MORE_VERT, width=30, height=30, icon_size=15, on_click=self.show_task_options),
+
+            self.task_options,
             self.dialog_start_another_task_error,
             self.finish_task_alarm,
             self.break_time_task_alarm,
@@ -172,8 +201,16 @@ class TaskRow(Row):
             self.alarm,
         ]
     
+    def show_task_options(self, e):
+        self.task_options.open = True
+        self.update()
+    
+    def hide_task_options(self):
+        self.task_options.open = False
+        self.page.update() 
+
     def decline_change(self, e):
-        self.dialog_start_another_task_error.open = False
+        self.task_options.open = False
         self.dialog_start_another_task_error.open = False
         self.finish_task_alarm.open = False
         self.break_time_task_alarm.open = False
@@ -183,6 +220,7 @@ class TaskRow(Row):
         self.update()
 
     def delete_task(self, e):
+        self.hide_task_options()
         self.db.delete_task(self.task)
         self.visible = False
         self.task.set_blank()
