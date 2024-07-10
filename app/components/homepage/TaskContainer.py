@@ -283,7 +283,7 @@ class TaskRow(Row):
     def timer(self):
         if self.task.running:
             for c in range(self.task.time):
-                if not self.task.paused and not self.task.blank:
+                if not self.task.paused:
                     sleep(1)
                     self.time_decrease()
                     self.set_timer()
@@ -291,6 +291,8 @@ class TaskRow(Row):
 
                 else:
                     break
+
+        if self.task.running:
             if self.task.time <= 0:
                 self.task.cycles -= 1
 
@@ -310,15 +312,18 @@ class TaskRow(Row):
             self.update()
                 
         elif self.task.is_break_time:
-            for c in range(self.task.break_time):
-                if not self.task.paused:
-                    sleep(1)
-                    self.break_time_decrease()
-                    self.set_timer()
-                    self.update()
+            for c in range(self.task.break_time + 1):
+                if self.task.is_break_time:
+                    if self.task.break_time <= 0:
+                        self.task.set_running()
+                        self.running_alarm()
                     
-                else:
-                    break
+                    elif not self.task.paused:
+                        self.break_time_decrease()
+                        self.set_timer()
+                        sleep(1)
+                else: break
+                
+                self.update()
+
             
-            self.task.set_running()
-            self.running_alarm()

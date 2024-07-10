@@ -18,7 +18,6 @@ class Task(Item):
         self.finish = False
         self.is_break_time = False
         self.blank = False
-        self.previous_status = self.status
 
     def set_blank(self):
         self.reset_states()
@@ -41,8 +40,8 @@ class Task(Item):
         self.status = 4
 
     def set_paused(self):
-        self.reset_states()
         self.paused = True
+        self.previous_status = self.status
         self.status = 3
 
     def resume(self):
