@@ -41,14 +41,21 @@ class InputTask(Container):
                     cycles      = self.deck.cycles,
                     sound       = self.deck.sound
             )
-            self.db.create_task(task)
+            is_task_unique = self.db.create_task(task)
 
             self.new_task.value = ''
 
         self.deck.tasks = self.db.find_tasks()
-        self.update()
-        task = self.task_container.to_row(task)
-        self.task_container.queue_tasks.append(task)
+        
+
+        if is_task_unique != False:
+            self.new_task.error_text = ''
+            task = self.task_container.to_row(task)
+            self.task_container.queue_tasks.append(task)
+        
+        else:
+            self.new_task.error_text = "Essa tarefa já existe."
+
         self.task_container.update()
         self.new_task.focus()
-        
+        self.update()

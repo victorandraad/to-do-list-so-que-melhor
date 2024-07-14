@@ -17,6 +17,8 @@ temporary_deck = Deck(
     'app/assets/rings/alert-sound-loop-189741.mp3'
 )
 
+db.create_deck(temporary_deck)
+
 def main(page: Page):
     page.fonts = {
         "Roboto": "/fonts/Roboto-Regular.ttf",

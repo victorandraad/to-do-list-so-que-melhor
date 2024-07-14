@@ -107,10 +107,14 @@ class DecksMenu(Container):
         if self.sub_menu.content.value == self.db.deck_name:
             self.db.deck_name = 'deck temporário'
             self.sub_menu.content.value = 'deck temporário'
+            self.deck.name = 'deck temporário'
+            self.deck.time = 1500
+            self.deck.break_time = 300
+            self.deck.cycles = 3
             self.update_menu_items()
             self.update()
             self.task_container.update()
-            self.db.delete_deck(deck)
+            self.db.create_deck(self.deck)
 
 
     def route_to_create_deck(self, e):
@@ -122,6 +126,9 @@ class DecksMenu(Container):
             self.task_container.dialog_create_deck.open = True
             self.task_container.content.content.controls[1].update()
 
+    def show_deck_settings(self):
+        pass
+
     def update_menu_items(self):
         self.task_container.dialog_change_deck = self.dialog_change_deck
         self.task_container.dialog_create_deck = self.dialog_create_deck
@@ -130,13 +137,13 @@ class DecksMenu(Container):
         for deck in decks:
             self.menu_items.append(
                 Container(
-                    padding=padding.all(10),
                     content=Row(
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                         
                         controls=[
                             MenuItemButton(
-                                content=Text(deck),
+                                width=200,
+                                content=Text(deck, max_lines=1, overflow=TextOverflow.ELLIPSIS, width=150),
                                 leading=Icon(icons.FOLDER),
                                 style=ButtonStyle(bgcolor={MaterialState.HOVERED: colors.GREEN}),
                                 on_click=lambda e, deck=deck: self.updateDeck(deck),

@@ -52,7 +52,7 @@ class TaskContainer(Container):
             
             self.content.update()
             return super().update()
-        
+
         self.content.content.controls[1].update()
 
         
@@ -71,7 +71,7 @@ class TaskContainer(Container):
         )
     
     def to_row(self, task) -> Row:
-        return TaskRow(self.db, task, self.deck, self.get_active_task)
+        return TaskRow(self.db, task, self.deck, self.get_active_task, self.update)
 
     def get_active_task(self, task_name) -> bool:
         """
@@ -81,18 +81,19 @@ class TaskContainer(Container):
         for task in self.tasks:
             if task.controls[0].controls[0].icon not in (icons.CHECK_BOX_OUTLINE_BLANK, icons.CHECK_BOX):
                 if task_name != task.controls[0].controls[1].controls[0].value:
-                    return task.controls[0].controls[1].controls[0].value
-        
+                    return True
+
         return False
 
 class TaskRow(Row):
-    def __init__(self, db: Database, task: Task, deck: Deck, get_active_task) -> None:
+    def __init__(self, db: Database, task: Task, deck: Deck, get_active_task, container_update) -> None:
         super().__init__()
 
         self.task: Task = task
         self.db: Database = db
         self.deck: Deck = deck
         self.get_active_task = get_active_task
+        self.container_update = container_update
 
         self.alarm = Audio(
             src=self.task.sound,
@@ -113,7 +114,7 @@ class TaskRow(Row):
             title=Text("Atenção!", color=colors.BLUE), 
             open=False,
             content=Text(value="Você deve terminar uma tarefa antes de começar outra."), 
-            actions=[TextButton("Voltar.", on_click=self.decline_change, ),]
+            actions=[TextButton("Voltar.", on_click=self.decline_change),]
         )
 
         self.running_task_alarm = AlertDialog(
@@ -149,20 +150,83 @@ class TaskRow(Row):
             on_click=self.change_status_click
         )
 
+        self.edit_task_form = AlertDialog(
+            bgcolor=colors.BLUE,
+            modal=True,
+            open=False,
+            title=Text(f"Edit task '{self.task.name}'", color=colors.WHITE),
+
+            content=Column(
+                width=300,
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+                controls=[
+                    name:=TextField(
+                        border_color=colors.WHITE,
+                        label_style=TextStyle(color=colors.WHITE),
+                        label="Nome da tarefa.",
+                        value=f"{self.task.name}",
+                        width=272,
+                        height=43, 
+                        color='white',
+                    ),
+
+                    time:= TextField(
+                        border_color=colors.WHITE,
+                        label_style=TextStyle(color=colors.WHITE),
+                        label="Tempo da tarefa.",
+                        value=f"{int(self.task.time / 60)}",
+                        width=272,
+                        height=43, 
+                        color='white',
+                    ),
+
+                    break_time:= TextField(
+                        border_color=colors.WHITE,
+                        label_style=TextStyle(color=colors.WHITE),
+                        label="Tempo de descanso da tarefa.",
+                        value=f"{int(self.task.break_time / 60)}",
+                        width=272,
+                        height=43, 
+                        color='white',
+                    ),
+
+                    cycles:= TextField(
+                        border_color=colors.WHITE,
+                        label_style=TextStyle(color=colors.WHITE),
+                        label="Quantidade de ciclos da tarefa.",
+                        value=f"{int(self.task.cycles)}",
+                        width=272,
+                        height=43, 
+                        color='white',
+                    )
+                ]
+            ),
+
+            actions=[
+                TextButton("Voltar.", on_click=self.decline_change, style=ButtonStyle(color=colors.WHITE)),
+                TextButton(
+                    "Editar Task.", 
+                    on_click=lambda _: self.edit_task(name.value, time.value, break_time.value, cycles.value), 
+                    style=ButtonStyle(color=colors.WHITE) 
+                ),
+            ],
+        )
+
         self.task_options = BottomSheet(
             bgcolor=colors.BLUE,
             content=Row(
                 controls=[
-                    # TextButton(
-                    #     text="Editar",
-                    #     icon=icons.EDIT,
-                    #     style=ButtonStyle(color=colors.WHITE),
-                    # ),
+                    TextButton(
+                        text="Editar",
+                        icon=icons.EDIT,
+                        style=ButtonStyle(color=colors.WHITE),
+                        on_click=self.show_edit_task_form     
+                    ),
                     TextButton(
                         text="Finalizar",
                         icon=icons.VERIFIED,
                         icon_color=colors.GREEN,
-                        on_click=lambda _: (self.task.set_finish(), self.db.edit_task(self.task, status=4), self.change_status(), self.hide_task_options()),
+                        on_click=self.finalize_from_btn,
                         style=ButtonStyle(color=colors.WHITE),
                     ),
                     TextButton(
@@ -199,10 +263,43 @@ class TaskRow(Row):
             self.break_time_task_alarm,
             self.running_task_alarm,
             self.alarm,
+            self.edit_task_form,
         ]
-    
+
+    def edit_task(self, name, time, break_time, cycles):
+        self.task.time = int(time) * 60
+        self.task.break_time = int(break_time) * 60
+        self.task.cycles = int(cycles)
+
+        self.db.edit_task(self.task, name=name, time=self.task.time, break_time=self.task.break_time, cycles=self.task.cycles)
+
+        self.task.name = name
+
+        self.controls[0].controls[1].controls[0].value = self.task.name
+
+        self.decline_change(e=None)
+
+    def show_edit_task_form(self, e):
+        self.edit_task_form.open = True
+        self.update()
+
+    def finalize_from_btn(self, e):
+        self.task.set_finish() 
+        self.db.edit_task(self.task, status=4)
+        self.hide_task_options()
+        self.task.time = self.deck.time
+        self.task.break_time = self.deck.break_time
+        self.task.cycles = self.deck.cycles
+        self.change_status()
+
     def show_task_options(self, e):
         self.task_options.open = True
+
+        if self.task.status != 0 and not self.task.status == 4:
+            self.task_options.content.controls[0].visible = False
+        else:
+            self.task_options.content.controls[0].visible = True
+
         self.update()
     
     def hide_task_options(self):
@@ -210,6 +307,7 @@ class TaskRow(Row):
         self.page.update() 
 
     def decline_change(self, e):
+        self.edit_task_form.open = False
         self.task_options.open = False
         self.dialog_start_another_task_error.open = False
         self.finish_task_alarm.open = False
@@ -230,9 +328,16 @@ class TaskRow(Row):
     def change_status(self):
         self.icon_status.icon = self.status[self.task.status]
         self.icon_status.update()
-        self.set_timer()
-        self.update()
-        self.timer()   
+
+        if self.icon_status.icon == self.status[4]:
+            self.container_update()
+        else:   
+            self.set_timer()
+            self.update()
+            self.timer()
+        
+        self.update()   
+
 
     def change_status_click(self, e):
         active_task = self.get_active_task(self.task.name)
@@ -283,7 +388,7 @@ class TaskRow(Row):
     def timer(self):
         if self.task.running:
             for c in range(self.task.time):
-                if not self.task.paused:
+                if not self.task.paused and self.task.running:
                     sleep(1)
                     self.time_decrease()
                     self.set_timer()
@@ -312,16 +417,17 @@ class TaskRow(Row):
             self.update()
                 
         elif self.task.is_break_time:
-            for c in range(self.task.break_time + 1):
+            for _ in range(self.task.break_time + 1):
                 if self.task.is_break_time:
                     if self.task.break_time <= 0:
                         self.task.set_running()
                         self.running_alarm()
                     
                     elif not self.task.paused:
+                        sleep(1)
                         self.break_time_decrease()
                         self.set_timer()
-                        sleep(1)
+                     
                 else: break
                 
                 self.update()

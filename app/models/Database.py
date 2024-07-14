@@ -36,7 +36,7 @@ class Database:
         self.close_task()
         self.close_deck()
 
-    def create_task(self, task, **kwargs):
+    def create_task(self, task, **kwargs) -> False:
         self.open_databases()
 
         for key, value in kwargs.items():
@@ -53,6 +53,11 @@ class Database:
                     'cycles': task.cycles
                 }
             )
+
+        else:
+            self.close_databases()
+            return False
+
         self.close_databases()
 
     def create_deck(self, deck, **kwargs):
@@ -74,6 +79,8 @@ class Database:
 
     def edit_task(self, task, **kwargs):
         self.open_databases()
+        old_name = task.name
+
         for key, value in kwargs.items():
             setattr(task, key, value)
 
@@ -86,7 +93,7 @@ class Database:
                 'sound': task.sound,
                 'cycles': task.cycles
             },
-            self.query.name == task.name
+            self.query.name == old_name
         )
         self.close_databases()
 
